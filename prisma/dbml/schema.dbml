@@ -1,0 +1,12 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table users {
+  user_id String [pk]
+  name String [not null]
+  house_number Int [not null]
+  roles String [not null]
+  phone_number String
+  address String
+}
