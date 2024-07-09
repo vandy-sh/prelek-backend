@@ -21,12 +21,13 @@ datasource db {
 
 
 model User {
-    user_id String @id
-    name String 
-    house_number Int
-    roles String
-    phone_number String?
-    address String?
+    user_id       String @id
+    name          String
+    house_number  Int
+    roles         String
+    phone_number  String?
+    address       String?
+    Walet         Walet[]
 
     @@index([user_id])
     @@index([name])
@@ -35,3 +36,43 @@ model User {
     @@index([roles])
     @@map("users")
 }
+
+model Walet {
+    id        String @id
+    userid    String
+    balance   Int
+    user      User  @relation(fields: [userid], references: [user_id])
+
+    @@index([id])
+    @@map("walet")
+}
+
+model Transaction {
+    id                  String @id
+    transaction_type    String
+    total_amount        Int
+    created_at          DateTime @default(now())
+    update_at           DateTime @updatedAt
+    Transaction_detail  Transaction_detail[]
+
+    @@index([id])
+    @@index([transaction_type])
+    @@index([update_at])
+}
+
+model Transaction_detail{
+    id        String @id
+    transaction_id String
+    title           String
+    description     String
+    price           Int
+    quantity        Int
+    transactionid   Transaction @relation(fields: [transaction_id], references: [id])
+
+    
+
+
+}
+
+
+
