@@ -1,21 +1,26 @@
 import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { CommandBus } from '@nestjs/cqrs';
+import { ApiOperation } from '@nestjs/swagger';
 import { Builder } from 'builder-pattern';
 import { Response } from 'express';
-import { UserCreateDto } from '../dto/user.dto';
+import { BaseApiOkResponse } from '../../core/decorators/base.api.ok.response.decorator';
+import { httpResponseHelper } from '../../core/helpers/response.helper';
 import {
   UserCreateCommand,
   UserCreateCommandResult,
 } from '../commands/user.create.command';
+import { UserCreateDto } from '../dto/user.dto';
+import { UserEntity } from '../entities/user.entity';
 
 @Controller('users')
 export class UserController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
+    // private readonly queryBus: QueryBus,
   ) {}
 
-  // @UseGuards(TenderJwtGuard)
+  @ApiOperation({ summary: 'Overall view from operator side' })
+  @BaseApiOkResponse(UserEntity, 'object')
   @Post('create')
   async create(@Res() res: Response, @Body() dto: UserCreateDto) {
     try {
@@ -23,15 +28,15 @@ export class UserController {
         ...dto,
       }).build();
 
-      const result = await this.commandBus.execute<
+      const { data } = await this.commandBus.execute<
         UserCreateCommand,
         UserCreateCommandResult
       >(command);
 
-      return baseHttpResponseHelper(res, {
-        data: result,
+      return httpResponseHelper(res, {
+        data,
+        statusCode: HttpStatus.OK,
         message: 'User Created Successfully!',
-        statusCode: HttpStatus.CREATED,
       });
     } catch (e) {
       throw e;
