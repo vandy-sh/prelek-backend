@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native"]
 }
 
@@ -19,62 +19,59 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
-
 model User {
-    user_id       String @id
-    name          String
-    password      String
-    house_number  Int
-    roles         String
-    phone_number  String?
-    address       String?
-    Walet         Walet[]
+  user_id      String  @id
+  name         String
+  email        String?
+  password     String
+  house_number Int
+  roles        String
+  phone_number String?
+  address      String?
+  Walet        Walet[]
 
-    @@index([user_id])
-    @@index([name])
-    @@index([house_number])
-    @@index([phone_number])
-    @@index([roles])
-    @@map("users")
+  @@index([user_id])
+  @@index([email])
+  @@index([name])
+  @@index([house_number])
+  @@index([phone_number])
+  @@index([roles])
+  @@map("users")
 }
 
 model Walet {
-    id        String @id
-    userid    String
-    balance   Int
-    user      User  @relation(fields: [userid], references: [user_id])
+  id      String @id
+  userid  String
+  balance Int
+  user    User   @relation(fields: [userid], references: [user_id])
 
-    @@index([id])
-    @@map("walet")
+  @@index([id])
+  @@map("walet")
 }
 
 model Transaction {
-    id                  String @id
-    transaction_type    String
-    total_amount        Int
-    created_at          DateTime @default(now())
-    update_at           DateTime @updatedAt
-    Transaction_detail  Transaction_detail[]
+  id                 String               @id
+  transaction_type   String
+  total_amount       Int
+  created_at         DateTime             @default(now())
+  update_at          DateTime             @updatedAt
+  Transaction_detail Transaction_detail[]
 
-    @@index([id])
-    @@index([transaction_type])
-    @@index([update_at])
-    @@map("transactions")
+  @@index([id])
+  @@index([transaction_type])
+  @@index([update_at])
+  @@map("transactions")
 }
 
-model Transaction_detail{
-    id        String @id
-    transaction_id String
-    title           String
-    description     String
-    price           Int
-    quantity        Int
-    transactionid   Transaction @relation(fields: [transaction_id], references: [id])
+model Transaction_detail {
+  id             String      @id
+  transaction_id String
+  title          String
+  description    String
+  price          Int
+  quantity       Int
+  transactionid  Transaction @relation(fields: [transaction_id], references: [id])
 
-
-    @@index([transaction_id])
-    @@map("transaction_details")
+  @@index([transaction_id])
+  @@map("transaction_details")
 }
-
-
-

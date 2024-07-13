@@ -5,6 +5,7 @@
 Table users {
   user_id String [pk]
   name String [not null]
+  email String
   password String [not null]
   house_number Int [not null]
   roles String [not null]
