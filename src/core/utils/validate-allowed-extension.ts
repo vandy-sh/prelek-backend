@@ -1,6 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
 // import { MulterFile } from '@webundsoehne/nest-fastify-file-upload/dist/interfaces/multer-options.interface';
-import { InvalidFileExtensionException } from 'src/caring-commons/exceptions/invalid-file-extension.exception';
 import { MIME_TYPE } from '../enums/file-mimetype.enum';
 
 /**
@@ -39,7 +38,7 @@ export function validateFileExtension(
         : fileOrMimeType.mimetype;
 
     if (!allowed.includes(fileExtension as MIME_TYPE)) {
-      throw new InvalidFileExtensionException(
+      throw new BadRequestException(
         `File${
           fileName ? `(${fileName})` : ''
         } extension ${fileExtension} is not allowed, allowed extensions are: ${allowed}`,
