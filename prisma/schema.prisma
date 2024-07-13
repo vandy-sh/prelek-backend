@@ -23,6 +23,7 @@ datasource db {
 model User {
     user_id       String @id
     name          String
+    password      String
     house_number  Int
     roles         String
     phone_number  String?
