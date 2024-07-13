@@ -1,8 +1,18 @@
-import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpStatus,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Builder } from 'builder-pattern';
 import { Response } from 'express';
+import { HasRoles } from '../../auth/decorator/roles.decorator';
+import { JwtAuthGuard } from '../../auth/guards/jwt.auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
 import { BaseApiOkResponse } from '../../core/decorators/base.api.ok.response.decorator';
 import { httpResponseHelper } from '../../core/helpers/response.helper';
 import {
@@ -22,6 +32,9 @@ export class UserController {
 
   @ApiOperation({ summary: 'Creating user (admin only)' })
   @BaseApiOkResponse(UserEntity, 'object')
+  @ApiBearerAuth(JwtAuthGuard.name)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @HasRoles('ADMIN')
   @Post('create')
   async create(@Res() res: Response, @Body() dto: UserCreateDto) {
     try {

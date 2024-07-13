@@ -10,39 +10,34 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { CurrentUserDTO, RoleType } from '../../../user/types';
 import { Builder } from 'builder-pattern';
 
-export class AdminLoginCommand {
-  login_id: string;
+export class ClientLoginCommand {
+  house_number: number;
   password: string;
   roles: string;
   ip?: string;
   user_agent?: string;
 }
 
-export class AdminLoginCommandResult {
+export class ClientLoginCommandResult {
   data: any;
 }
 
-@CommandHandler(AdminLoginCommand)
-export class AuthLoginCommandHandler
-  implements ICommandHandler<AdminLoginCommand, AdminLoginCommandResult>
+@CommandHandler(ClientLoginCommand)
+export class ClientLoginCommandHandler
+  implements ICommandHandler<ClientLoginCommand, ClientLoginCommandResult>
 {
   constructor(
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
   ) {}
 
-  async execute(command: AdminLoginCommand): Promise<AdminLoginCommandResult> {
-    // cek apakah user sudah terdaftar,
-    // cari yang emailnya sama dengan yang dikirimkan dari payload
-    // nomer rumahnya 0
-    // dan roles bukan guest
+  async execute(
+    command: ClientLoginCommand,
+  ): Promise<ClientLoginCommandResult> {
     const isUserExist = await this.prisma.user.findFirst({
       where: {
-        email: command.login_id,
-        house_number: 0,
-        roles: {
-          not: 'GUEST',
-        },
+        house_number: command.house_number,
+        roles: 'GUEST',
       },
     });
 

@@ -5,6 +5,8 @@ import { AuthController } from './controllers/auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { IAppConfig } from '../core/configs/app.config';
+import { JwtStrategy } from './strategy/jwt.strategy';
+import { ClientLoginCommandHandler } from './commands/client.login/client.login.command';
 
 const importedModule = [
   CqrsModule,
@@ -21,14 +23,21 @@ const importedModule = [
   }),
 ];
 const controllers = [AuthController];
-const repositories: Provider[] = [AuthLoginCommandHandler];
+const repositories: Provider[] = [
+  AuthLoginCommandHandler,
+  ClientLoginCommandHandler,
+];
+const strategies: Provider[] = [
+  /* authentication */
+  JwtStrategy,
+];
 const commands: Provider[] = [];
 const queries: Provider[] = [];
 const exportedProviders: Provider[] = [];
 @Module({
   imports: [...importedModule],
   controllers: [...controllers],
-  providers: [...repositories, ...commands, ...queries],
+  providers: [...repositories, ...commands, ...queries, ...strategies],
   exports: [...exportedProviders],
 })
 export class AuthModule {}
