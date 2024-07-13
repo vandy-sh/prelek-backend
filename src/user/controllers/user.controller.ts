@@ -1,6 +1,6 @@
 import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Builder } from 'builder-pattern';
 import { Response } from 'express';
 import { BaseApiOkResponse } from '../../core/decorators/base.api.ok.response.decorator';
@@ -12,6 +12,7 @@ import {
 import { UserCreateDto } from '../dto/user.dto';
 import { UserEntity } from '../entities/user.entity';
 
+@ApiTags('User Module')
 @Controller('users')
 export class UserController {
   constructor(
@@ -19,7 +20,7 @@ export class UserController {
     // private readonly queryBus: QueryBus,
   ) {}
 
-  @ApiOperation({ summary: 'Overall view from operator side' })
+  @ApiOperation({ summary: 'Creating user (admin only)' })
   @BaseApiOkResponse(UserEntity, 'object')
   @Post('create')
   async create(@Res() res: Response, @Body() dto: UserCreateDto) {

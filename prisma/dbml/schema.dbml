@@ -11,6 +11,9 @@ Table users {
   roles String [not null]
   phone_number String
   address String
+  last_login_ip String
+  last_login_user_agent String
+  last_login_timestamp String
   Walet walet [not null]
 }
 

@@ -20,15 +20,18 @@ datasource db {
 }
 
 model User {
-  user_id      String  @id
-  name         String
-  email        String?
-  password     String
-  house_number Int
-  roles        String
-  phone_number String?
-  address      String?
-  Walet        Walet[]
+  user_id               String  @id
+  name                  String
+  email                 String?
+  password              String
+  house_number          Int
+  roles                 String
+  phone_number          String?
+  address               String?
+  last_login_ip         String?
+  last_login_user_agent String?
+  last_login_timestamp  String?
+  Walet                 Walet[]
 
   @@index([user_id])
   @@index([email])
