@@ -20,25 +20,25 @@ Table walet {
   user users [not null]
 }
 
-Table Transaction {
+Table transactions {
   id String [pk]
   transaction_type String [not null]
   total_amount Int [not null]
   created_at DateTime [default: `now()`, not null]
   update_at DateTime [not null]
-  Transaction_detail Transaction_detail [not null]
+  Transaction_detail transaction_details [not null]
 }
 
-Table Transaction_detail {
+Table transaction_details {
   id String [pk]
   transaction_id String [not null]
   title String [not null]
   description String [not null]
   price Int [not null]
   quantity Int [not null]
-  transactionid Transaction [not null]
+  transactionid transactions [not null]
 }
 
 Ref: walet.userid > users.user_id
 
-Ref: Transaction_detail.transaction_id > Transaction.id
+Ref: transaction_details.transaction_id > transactions.id

@@ -59,6 +59,7 @@ model Transaction {
     @@index([id])
     @@index([transaction_type])
     @@index([update_at])
+    @@map("transactions")
 }
 
 model Transaction_detail{
@@ -70,9 +71,9 @@ model Transaction_detail{
     quantity        Int
     transactionid   Transaction @relation(fields: [transaction_id], references: [id])
 
-    
 
-
+    @@index([transaction_id])
+    @@map("transaction_details")
 }
 
 
