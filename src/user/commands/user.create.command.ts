@@ -27,7 +27,7 @@ export class UserCreateCommandHandler
       const user = await this.prisma.user.create({
         data: {
           name: command.name,
-          // password: command.password,
+          password: command.password,
           house_number: command.house_number,
           phone_number: command.phone_number,
           address: command.address,
