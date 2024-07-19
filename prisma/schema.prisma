@@ -46,7 +46,9 @@ model Wallet {
   id      String @id
   userid  String @unique()
   balance Int
+  type    String // WARGA/ADMIN
   user    User   @relation(fields: [userid], references: [user_id])
+  transactions Transaction[]
 
   @@index([id])
   @@map("wallet")
@@ -54,10 +56,13 @@ model Wallet {
 
 model Transaction {
   id                 String               @id
-  transaction_type   String
+  transaction_type   String // TOP_UP, EXPANSES, SUBSCRIPTION_EXPANSES , INCOME
   total_amount       Int
+  wallet_id          String?
+  activity_id        String?
   created_at         DateTime             @default(now())
   update_at          DateTime             @updatedAt
+  wallet             Wallet? @relation(fields: [wallet_id], references: [id])
   Transaction_detail Transaction_detail[]
 
   @@index([id])
@@ -65,6 +70,30 @@ model Transaction {
   @@index([update_at])
   @@map("transactions")
 }
+
+model Activity {
+    id String @id
+    title String
+    description String
+    start_date DateTime
+    photos Media[]
+
+    @@map("activities")
+}
+
+
+model Media {
+    id String @id
+    size Int
+    mime_type String
+    url String
+    media_type String // foto bon / foto kegiatan
+    activity_id String?
+    Activity Activity? @relation(fields: [activity_id], references: [id])
+
+    @@map("media")
+}
+
 
 model Transaction_detail {
   id             String      @id

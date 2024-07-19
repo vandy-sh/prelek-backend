@@ -61,6 +61,7 @@ export class UserCreateCommandHandler
             id: nanoid(),
             balance: 0,
             userid: user.user_id,
+            type: 'NORMAL',
           },
         });
 

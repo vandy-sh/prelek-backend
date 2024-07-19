@@ -21,16 +21,39 @@ Table wallet {
   id String [pk]
   userid String [unique, not null]
   balance Int [not null]
+  type String [not null]
   user users [not null]
+  transactions transactions [not null]
 }
 
 Table transactions {
   id String [pk]
   transaction_type String [not null]
   total_amount Int [not null]
+  wallet_id String
+  activity_id String
   created_at DateTime [default: `now()`, not null]
   update_at DateTime [not null]
+  wallet wallet
   Transaction_detail transaction_details [not null]
+}
+
+Table activities {
+  id String [pk]
+  title String [not null]
+  description String [not null]
+  start_date DateTime [not null]
+  photos media [not null]
+}
+
+Table media {
+  id String [pk]
+  size Int [not null]
+  mime_type String [not null]
+  url String [not null]
+  media_type String [not null]
+  activity_id String
+  Activity activities
 }
 
 Table transaction_details {
@@ -44,5 +67,9 @@ Table transaction_details {
 }
 
 Ref: wallet.userid - users.user_id
+
+Ref: transactions.wallet_id > wallet.id
+
+Ref: media.activity_id > activities.id
 
 Ref: transaction_details.transaction_id > transactions.id
