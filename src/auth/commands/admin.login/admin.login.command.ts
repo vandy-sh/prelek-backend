@@ -9,6 +9,7 @@ import { comparePassword } from '../../../core/utils/password.util';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { CurrentUserDTO, RoleType } from '../../../user/types';
 import { Builder } from 'builder-pattern';
+import { LoginResponseDto } from '../../dtos/response.dto';
 
 export class AdminLoginCommand {
   login_id: string;
@@ -19,7 +20,7 @@ export class AdminLoginCommand {
 }
 
 export class AdminLoginCommandResult {
-  data: any;
+  data: LoginResponseDto;
 }
 
 @CommandHandler(AdminLoginCommand)
@@ -93,12 +94,14 @@ export class AuthLoginCommandHandler
       house_number: isUserExist.house_number,
     }).build();
 
+    const data = Builder<LoginResponseDto>(LoginResponseDto, {
+      user: currentUser,
+      accessToken: access_token,
+      refreshToken: refresh_token,
+    }).build();
+
     return {
-      data: {
-        user: currentUser,
-        accessToken: access_token,
-        refreshToken: refresh_token,
-      },
+      data,
     };
   }
 }

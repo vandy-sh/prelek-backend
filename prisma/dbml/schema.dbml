@@ -14,12 +14,12 @@ Table users {
   last_login_ip String
   last_login_user_agent String
   last_login_timestamp String
-  Walet walet [not null]
+  Wallet wallet
 }
 
-Table walet {
+Table wallet {
   id String [pk]
-  userid String [not null]
+  userid String [unique, not null]
   balance Int [not null]
   user users [not null]
 }
@@ -43,6 +43,6 @@ Table transaction_details {
   transactionid transactions [not null]
 }
 
-Ref: walet.userid > users.user_id
+Ref: wallet.userid - users.user_id
 
 Ref: transaction_details.transaction_id > transactions.id

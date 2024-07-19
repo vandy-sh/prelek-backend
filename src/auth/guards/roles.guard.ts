@@ -41,6 +41,7 @@ export class RolesGuard implements CanActivate {
     // find out if user roles is in allowed roles
     const hasRole = allowedRoles.indexOf(user.roles) > -1;
     // console.dir(hasRole);
+    console.log(hasRole);
 
     if (!hasRole) {
       throw new ForbiddenException('You are not allowed to access this route!');

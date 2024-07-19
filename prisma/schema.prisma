@@ -31,7 +31,7 @@ model User {
   last_login_ip         String?
   last_login_user_agent String?
   last_login_timestamp  String?
-  Walet                 Walet[]
+  Wallet                 Wallet?
 
   @@index([user_id])
   @@index([email])
@@ -42,14 +42,14 @@ model User {
   @@map("users")
 }
 
-model Walet {
+model Wallet {
   id      String @id
-  userid  String
+  userid  String @unique()
   balance Int
   user    User   @relation(fields: [userid], references: [user_id])
 
   @@index([id])
-  @@map("walet")
+  @@map("wallet")
 }
 
 model Transaction {

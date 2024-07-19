@@ -46,7 +46,7 @@ export class UserController {
         UserCreateCommand,
         UserCreateCommandResult
       >(command);
-
+      console.log(data);
       return httpResponseHelper(res, {
         data,
         statusCode: HttpStatus.OK,
