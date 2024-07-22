@@ -113,29 +113,26 @@ export class UserController {
   //     return baseHttpResponseHelper(res, responseBuilder.build());
   //   }
 
-  //   @UseGuards(TenderJwtGuard)
-  //   @Post('update')
-  //   async update(@Res() res: Response, @Body() dto: UserUpdateDto) {
-  //     try {
-  //          const command = Builder<UserCommand>(
-  //              UserUpdateCommand,
-  //          {
-  //               ...dto,
-  //          },
-  //          ).build();
+  // @UseGuards(TenderJwtGuard)
+  // @Post('update')
+  // async update(@Res() res: Response, @Body() dto: UserUpdateDto) {
+  //   try {
+  //     const command = Builder<UserCommand>(UserUpdateCommand, {
+  //       ...dto,
+  //     }).build();
 
-  //      const result = await this.commandBus.execute<
-  //          UserUpdateCommand,
-  //          UserUpdateCommandResult
-  //      >(command);
+  //     const result = await this.commandBus.execute<
+  //       UserUpdateCommand,
+  //       UserUpdateCommandResult
+  //     >(command);
 
-  //      return baseHttpResponseHelper(res, {
-  //          data: result,
-  //          message: 'User Updated Successfully!',
-  //          statusCode: HttpStatus.OK,
-  //      });
-  //        } catch (e) {
-  //          throw e;
-  //        }
-  //  }
+  //     return baseHttpResponseHelper(res, {
+  //       data: result,
+  //       message: 'User Updated Successfully!',
+  //       statusCode: HttpStatus.OK,
+  //     });
+  //   } catch (e) {
+  //     throw e;
+  //   }
+  // }
 }
