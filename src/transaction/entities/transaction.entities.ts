@@ -1,0 +1,10 @@
+export class TransactionEntity {}
+
+export enum TRANSACTION_TYPE_ENUM {
+  TOP_UP = 'TOP_UP',
+  EXPANSES = 'EXPANSES',
+  SUBSCRIPTION_EXPANSES = 'SUBSCRIPTION_EXPANSES',
+  SUBSCRIPTION_INCOME = 'SUBSCRIPTION_INCOME',
+}
+
+export type TransactionType = keyof typeof TRANSACTION_TYPE_ENUM;

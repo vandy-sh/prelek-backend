@@ -1,29 +1,33 @@
-import { NotFoundException } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Builder } from 'builder-pattern';
-import { nanoid } from 'nanoid';
-import { PrismaService } from '../../prisma/prisma.service';
-import { TRANSACTION_TYPE_ENUM } from '../../transaction/entities/transaction.entities';
+import { CommandHandler, ICommandBus, ICommandHandler } from '@nestjs/cqrs';
+import { CurrentUserDTO } from '../../user/types';
 import { WalletEntity } from '../entities/wallet.entity';
+import { PrismaService } from '../../prisma/prisma.service';
+import { ConflictException, NotFoundException } from '@nestjs/common';
+import { comparePassword } from '../../core/utils/password.util';
+import { number } from 'joi';
+import { UserEntity } from '../../user/entities/user.entity';
+import { nanoid } from 'nanoid';
+import { dir } from 'console';
+import { Builder } from 'builder-pattern';
 
-export class WalletTopUpCommand {
+export class UpdateWalletCommand {
   house_number: number;
   amount: number;
 }
 
-export class WalletTopUpCommandResult {
+export class UpdateWalletCommandResult {
   data: WalletEntity;
 }
 
-@CommandHandler(WalletTopUpCommand)
-export class WalletTopUpCommandHandler
-  implements ICommandHandler<WalletTopUpCommand, WalletTopUpCommandResult>
+@CommandHandler(UpdateWalletCommand)
+export class WalletCommandHandler
+  implements ICommandHandler<UpdateWalletCommand, UpdateWalletCommandResult>
 {
   constructor(private readonly prisma: PrismaService) {}
 
   async execute(
-    command: WalletTopUpCommand,
-  ): Promise<WalletTopUpCommandResult> {
+    command: UpdateWalletCommand,
+  ): Promise<UpdateWalletCommandResult> {
     try {
       //cek apakah user ada
       const isUserExist = await this.prisma.user.findFirst({
@@ -32,6 +36,7 @@ export class WalletTopUpCommandHandler
           roles: 'GUEST',
         },
       });
+      console.dir(isUserExist, { depth: null });
       if (!isUserExist) {
         throw new NotFoundException(`User not found!`);
       }
@@ -53,9 +58,8 @@ export class WalletTopUpCommandHandler
             userid: isUserExist.user_id,
           },
           data: {
-            balance: {
-              increment: command.amount,
-            },
+            balance: userWallet.balance + command.amount,
+            type: 'TOPUP',
           },
         });
 
@@ -63,10 +67,11 @@ export class WalletTopUpCommandHandler
           data: {
             id: nanoid(),
             wallet_id: userWallet.id,
-            transaction_type: TRANSACTION_TYPE_ENUM.TOP_UP,
+            transaction_type: updatedWallet.type,
             total_amount: command.amount,
           },
         });
+        console.log(dir);
 
         return {
           updatedWallet,
@@ -78,9 +83,7 @@ export class WalletTopUpCommandHandler
         ...dbProcess.updatedWallet,
       }).build();
 
-      return {
-        data: entity,
-      };
+      return new UpdateWalletCommandResult();
     } catch (error) {
       console.log('ini');
       console.trace(error);

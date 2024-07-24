@@ -11,17 +11,18 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
 import { JwtAuthGuard } from '../../auth/guards/jwt.auth.guard';
 import { HasRoles } from '../../auth/decorator/roles.decorator';
 import { Response } from 'express';
-import { CreateWalletDto } from '../dto/wallet.dto';
-import {
-  UpdateWalletCommand,
-  UpdateWalletCommandResult,
-} from '../commands/wallet.top.up.command';
+import { TopUpWalletDto } from '../dto/wallet.dto';
+
 import { httpResponseHelper } from '../../core/helpers/response.helper';
 import { Builder } from 'builder-pattern';
 import { CommandBus } from '@nestjs/cqrs';
 import { BaseApiOkResponse } from '../../core/decorators/base.api.ok.response.decorator';
 import { UserEntity } from '../../user/entities/user.entity';
 import { WalletEntity } from '../entities/wallet.entity';
+import {
+  WalletTopUpCommand,
+  WalletTopUpCommandResult,
+} from '../commands/wallet.top.up.command';
 
 @ApiTags('Wallet')
 @Controller('wallets')
@@ -35,15 +36,15 @@ export class WalletController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HasRoles('FINANCE')
   @Post('top-up')
-  async topUp(@Res() res: Response, @Body() dto: CreateWalletDto) {
+  async topUp(@Res() res: Response, @Body() dto: TopUpWalletDto) {
     try {
-      const command = Builder<UpdateWalletCommand>(UpdateWalletCommand, {
+      const command = Builder<WalletTopUpCommand>(WalletTopUpCommand, {
         ...dto,
       }).build();
 
       const { data } = await this.commandBus.execute<
-        UpdateWalletCommand,
-        UpdateWalletCommandResult
+        WalletTopUpCommand,
+        WalletTopUpCommandResult
       >(command);
       console.log(data);
       return httpResponseHelper(res, {
