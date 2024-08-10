@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { appConfig } from './core/configs/app.config';
 import { ConfigModule } from '@nestjs/config';
 import { WalletModule } from './wallet/wallet.module';
+import { WalletsModule } from './subscription/charge/wallets.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { WalletModule } from './wallet/wallet.module';
     AuthModule,
     UserModule,
     WalletModule,
+    WalletsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

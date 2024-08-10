@@ -1,0 +1,43 @@
+*  Petugas scan qr copy id dari wallet user yang ada di database - masukan password petugas lalu pilih (Cash/Wallet)
+
+*  ambil uang dari wallet
+*  cek saldo, apakah saldo ada atau tidak
+    -wallet_id
+    -nama
+    -saldo
+*  ambil uang dari kaleng
+    -Transaksi Baru "TOP_UP"
+    -wallet_id
+    -total_ammount (sesuai yang ada di kaleng)
+
+*  [LOG TRANSAKSI USER] 
+    -buat transaction baru dengan type SUBSCRIPTION_PAYMENT, 
+    -dengan wallet id dari wallet id yang di qr,
+    -total_amount nya sesuai kebutuhan (berapa pajak yang dikenakan bisa di sesuaikan sesuai kebutuhan aplikasi)
+
+*  [LOG TRANSAKSI WALLET VAULT/PENYIMPANAN], 
+    -cari dari wallet yang type nya VAULT, 
+    -buat transaction baru dengan type SUBCRIPTION_INCOME, 
+    -wallet id dari wallet dengan type VAULT tersebut, 
+    -tambahkan saldo/balance sesuai kebutuhan
+
+POST [wallets/subcription-charge]
+flow: petugas meng scan qr, masukan password petugas, lalu ambil uang dari wallet user / ambil uang dari kaleng di depan rumah (ketika uang di ambil maka wallet dari user bertambah sesuai dari uang yang ada di dalam kaleng) [di tanyakan setelah memasukan password, ingin mengguakan cash/wallet]
+task description:
+
+- ambil wallet dari wallet id yang di dapat dari qr (untuk mendapatkan wallet dan pemilik walet serta saldo) 
+
+- jika menggunakan kaleng maka, buat transaction baru dengan type TOP_UP, wallet_id sama dengan wallet id sesuai input dari qr, lalu total_amountnya sama dengan jumlah uang di toples [step ini di skip ketika menggunakan wallet]
+
+- cek saldo dari wallet tersebut bila cukup maka kurangi jumlah saldo dari wallet user tersebut.
+
+- [LOG TRANSAKSI USER] buat transaction baru dengan type SUBSCRIPTION_PAYMENT, dengan wallet id dari wallet id yang di qr, dan total_amount nya sesuai kebutuhan (berapa pajak yang dikenakan bisa di sesuaikan sesuai kebutuhan aplikasi)
+
+- [LOG TRANSAKSI WALLET VAULT/PENYIMPANAN], cari dari wallet yang type nya VAULT, buat transaction baru dengan type SUBCRIPTION_INCOME, wallet id dari wallet dengan type VAULT tersebut, tambahkan saldo/balance sesuai kebutuhan
+
+transaction 
+
+id
+total_amount
+transaction_type
+wallet_id
