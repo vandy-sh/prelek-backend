@@ -151,6 +151,7 @@ export class CashUserChargeCommandHandler
           data: {
             id: nanoid(),
             wallet_id: cashBalance.id,
+            user_id: '',
             transaction_type: TRANSACTION_TYPE_ENUM.TOP_UP,
             total_amount: command.amount,
           },
@@ -255,6 +256,7 @@ export class WalletUserChargeCommandHandler
           data: {
             id: nanoid(),
             wallet_id: WalletBalance.id,
+            user_id: isUserExist.user_id,
             transaction_type: TRANSACTION_TYPE_ENUM.EXPANSES,
             total_amount: 200,
           },

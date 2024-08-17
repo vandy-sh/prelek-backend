@@ -3,7 +3,10 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Builder } from 'builder-pattern';
 import { nanoid } from 'nanoid';
 import { PrismaService } from '../../prisma/prisma.service';
-import { TRANSACTION_TYPE_ENUM } from '../../transaction/entities/transaction.entities';
+import {
+  TRANSACTION_STATUS_ENUM,
+  TRANSACTION_TYPE_ENUM,
+} from '../../transaction/entities/transaction.entities';
 import { WalletEntity } from '../entities/wallet.entity';
 
 export class WalletTopUpCommand {
@@ -63,6 +66,8 @@ export class WalletTopUpCommandHandler
           data: {
             id: nanoid(),
             wallet_id: userWallet.id,
+            user_id: isUserExist.user_id,
+            status: TRANSACTION_STATUS_ENUM.SUCCESS,
             transaction_type: TRANSACTION_TYPE_ENUM.TOP_UP,
             total_amount: command.amount,
           },
@@ -82,7 +87,6 @@ export class WalletTopUpCommandHandler
         data: entity,
       };
     } catch (error) {
-      console.log('ini');
       console.trace(error);
       throw error;
     }

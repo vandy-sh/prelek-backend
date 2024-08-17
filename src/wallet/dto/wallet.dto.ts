@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
 
 export class TopUpWalletDto {
   @ApiProperty()
@@ -13,6 +13,18 @@ export class TopUpWalletDto {
   amount: number;
 }
 
+export class WalletChargeDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  wallet_id: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(0)
+  cash_amount: number;
+}
 // refactored (liat yang atas)
 // export class CreateWalletDto {
 //   @ApiProperty()

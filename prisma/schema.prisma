@@ -56,10 +56,12 @@ model Wallet {
 
 model Transaction {
   id                 String               @id
-  transaction_type   String // TOP_UP, EXPANSES, SUBSCRIPTION_EXPANSES , INCOME
+  transaction_type   String                // TOP_UP, EXPANSES, SUBSCRIPTION_EXPANSES , INCOME
   total_amount       Int
   wallet_id          String?
   activity_id        String?
+  user_id            String 
+  status             String               @default("PENDING")
   created_at         DateTime             @default(now())
   update_at          DateTime             @updatedAt
   wallet             Wallet? @relation(fields: [wallet_id], references: [id])

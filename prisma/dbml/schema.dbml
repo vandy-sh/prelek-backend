@@ -32,6 +32,8 @@ Table transactions {
   total_amount Int [not null]
   wallet_id String
   activity_id String
+  user_id String [not null]
+  status String [not null, default: 'PENDING']
   created_at DateTime [default: `now()`, not null]
   update_at DateTime [not null]
   wallet wallet

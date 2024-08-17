@@ -28,8 +28,8 @@ export class WalletEntity {
 }
 
 export enum WALLET_TYPE_ENUM {
-  NORMAL = 'NORMAL',
-  VAULT = 'VAULT',
+  NORMAL = 'NORMAL', // dompet warga
+  VAULT = 'VAULT', // penyimpanan kas / DOMPET ADMIN
 }
 
 export type WALLET_TYPE = keyof typeof WALLET_TYPE_ENUM;

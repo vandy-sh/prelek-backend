@@ -11,7 +11,7 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
 import { JwtAuthGuard } from '../../auth/guards/jwt.auth.guard';
 import { HasRoles } from '../../auth/decorator/roles.decorator';
 import { Response } from 'express';
-import { TopUpWalletDto } from '../dto/wallet.dto';
+import { TopUpWalletDto, WalletChargeDto } from '../dto/wallet.dto';
 
 import { httpResponseHelper } from '../../core/helpers/response.helper';
 import { Builder } from 'builder-pattern';
@@ -23,6 +23,10 @@ import {
   WalletTopUpCommand,
   WalletTopUpCommandResult,
 } from '../commands/wallet.top.up.command';
+import {
+  WalletChargeCommand,
+  WalletChargeCommandResult,
+} from '../commands/wallet.charge.command';
 
 @ApiTags('Wallet')
 @Controller('wallets')
@@ -46,11 +50,37 @@ export class WalletController {
         WalletTopUpCommand,
         WalletTopUpCommandResult
       >(command);
-      console.log(data);
+
       return httpResponseHelper(res, {
         data,
         statusCode: HttpStatus.OK,
-        message: 'topUp wallet Successfully!',
+        message: 'Top Up Wallet Successfully!',
+      });
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  @BaseApiOkResponse(WalletEntity, 'object')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @HasRoles('OPERATOR')
+  @Post('charge')
+  async charge(@Res() res: Response, @Body() dto: WalletChargeDto) {
+    try {
+      const command = Builder<WalletChargeCommand>(WalletChargeCommand, {
+        ...dto,
+      }).build();
+
+      const { data } = await this.commandBus.execute<
+        WalletChargeCommand,
+        WalletChargeCommandResult
+      >(command);
+
+      return httpResponseHelper(res, {
+        data,
+        statusCode: HttpStatus.OK,
+        message: 'Wallet Charged Successfully!',
       });
     } catch (e) {
       console.log(e);
