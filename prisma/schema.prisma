@@ -63,6 +63,7 @@ model Transaction {
   created_at         DateTime             @default(now())
   update_at          DateTime             @updatedAt
   wallet             Wallet? @relation(fields: [wallet_id], references: [id])
+  Activity           Activity? @relation(fields: [activity_id], references: [id])
   Transaction_detail Transaction_detail[]
 
   @@index([id])
@@ -79,6 +80,7 @@ model Activity {
     photos Media[]
 
     @@map("activities")
+    Transaction Transaction[]
 }
 
 

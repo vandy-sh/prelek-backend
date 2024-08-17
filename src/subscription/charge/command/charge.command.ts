@@ -8,9 +8,9 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { WalletEntity } from '../../../wallet/entities/wallet.entity';
 import { comparePassword } from '../../../core/utils/password.util';
 import { nanoid } from 'nanoid';
-import { TRANSACTION_TYPE_ENUM } from '../../../transaction/entities/transaction.entities';
 import { ChargeEntity } from '../entities/charge.entity';
 import { Builder } from 'builder-pattern';
+import { TRANSACTION_TYPE_ENUM } from '../../../transaction/entities/transaction.entities';
 
 //PASSWORD DAN BARCODE
 export class OperatorSignPasswordCommand {
@@ -155,7 +155,26 @@ export class CashUserChargeCommandHandler
             total_amount: command.amount,
           },
         });
-        console.log('ooo');
+
+        const tsfrcheck = await tx.wallet.findUnique({
+          where: {
+            id: 'yY32dFzSj8zNrq6CoBiRm',
+          },
+        });
+        if (!tsfrcheck) {
+          throw new NotFoundException('wallet balance not found');
+        }
+
+        const tsfr = await tx.wallet.update({
+          where: {
+            userid: tsfrcheck.userid,
+          },
+          data: {
+            balance: {
+              increment: command.amount,
+            },
+          },
+        });
 
         return {
           cashBalance,
@@ -236,11 +255,30 @@ export class WalletUserChargeCommandHandler
           data: {
             id: nanoid(),
             wallet_id: WalletBalance.id,
-            transaction_type: TRANSACTION_TYPE_ENUM.TOP_UP,
+            transaction_type: TRANSACTION_TYPE_ENUM.EXPANSES,
             total_amount: 200,
           },
         });
-        console.log('ooo');
+
+        const tsfrcheck = await tx.wallet.findUnique({
+          where: {
+            id: 'yY32dFzSj8zNrq6CoBiRm',
+          },
+        });
+        if (!tsfrcheck) {
+          throw new NotFoundException('wallet balance not found');
+        }
+
+        const tsfr = await tx.wallet.update({
+          where: {
+            userid: tsfrcheck.userid,
+          },
+          data: {
+            balance: {
+              increment: 200,
+            },
+          },
+        });
 
         return {
           WalletBalance,

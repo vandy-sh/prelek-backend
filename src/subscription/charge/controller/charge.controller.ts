@@ -65,8 +65,6 @@ export class ChargeController {
         OperatorSignPasswordCommand,
         OperatorSignPasswordCommandResult
       >(command);
-      console.log(this.charge);
-
       return httpResponseHelper(res, {
         data,
         statusCode: HttpStatus.OK,

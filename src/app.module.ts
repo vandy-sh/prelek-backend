@@ -8,6 +8,7 @@ import { appConfig } from './core/configs/app.config';
 import { ConfigModule } from '@nestjs/config';
 import { WalletModule } from './wallet/wallet.module';
 import { WalletsModule } from './subscription/charge/wallets.module';
+import { ActivityModule } from './activity/report.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { WalletsModule } from './subscription/charge/wallets.module';
     UserModule,
     WalletModule,
     WalletsModule,
+    ActivityModule,
   ],
   controllers: [AppController],
   providers: [AppService],
