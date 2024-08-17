@@ -15,6 +15,7 @@ Table users {
   last_login_user_agent String
   last_login_timestamp String
   Wallet wallet
+  Transactions transactions [not null]
 }
 
 Table wallet {
@@ -36,6 +37,7 @@ Table transactions {
   status String [not null, default: 'PENDING']
   created_at DateTime [default: `now()`, not null]
   update_at DateTime [not null]
+  user users [not null]
   wallet wallet
   Activity activities
   Transaction_detail transaction_details [not null]
@@ -71,6 +73,8 @@ Table transaction_details {
 }
 
 Ref: wallet.userid - users.user_id
+
+Ref: transactions.user_id > users.user_id
 
 Ref: transactions.wallet_id > wallet.id
 

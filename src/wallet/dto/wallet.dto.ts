@@ -10,6 +10,7 @@ export class TopUpWalletDto {
   @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
+  @Min(100)
   amount: number;
 }
 

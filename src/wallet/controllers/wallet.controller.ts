@@ -72,7 +72,7 @@ export class WalletController {
         ...dto,
       }).build();
 
-      const { data } = await this.commandBus.execute<
+      const { data, message } = await this.commandBus.execute<
         WalletChargeCommand,
         WalletChargeCommandResult
       >(command);
@@ -80,7 +80,7 @@ export class WalletController {
       return httpResponseHelper(res, {
         data,
         statusCode: HttpStatus.OK,
-        message: 'Wallet Charged Successfully!',
+        message: `${message}`,
       });
     } catch (e) {
       console.log(e);
