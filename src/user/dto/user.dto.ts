@@ -6,7 +6,10 @@ import {
   IsOptional,
   IsString,
   Min,
+  ValidateIf,
 } from 'class-validator';
+import { BaseFilterRequest } from '../../core/dtos/base-filter-request.dto';
+import { Type } from 'class-transformer';
 
 export class UserCreateDto {
   @ApiProperty()
@@ -51,4 +54,28 @@ export class UpdateUserDto {
 export class LoginUser {
   @ApiProperty()
   house_number: number;
+}
+
+export class UserFindManyQueryDto extends BaseFilterRequest {
+  @ApiProperty()
+  // @ValidateIf((o) => o.house_number)
+  @IsNumber()
+  @IsOptional()
+  @Type(() => Number)
+  house_number?: number;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  roles?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  phone_number?: string;
 }
