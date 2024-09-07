@@ -31,8 +31,8 @@ model User {
   last_login_ip         String?
   last_login_user_agent String?
   last_login_timestamp  String?
-  Wallet                 Wallet?
-  Transactions           Transaction[]
+  wallet                 Wallet?
+  transactions           Transaction[]
 
   @@index([user_id])
   @@index([email])

@@ -57,24 +57,29 @@ export class LoginUser {
 }
 
 export class UserFindManyQueryDto extends BaseFilterRequest {
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  search_params?: string;
+
+  @ApiPropertyOptional()
   // @ValidateIf((o) => o.house_number)
   @IsNumber()
   @IsOptional()
   @Type(() => Number)
   house_number?: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
   @IsOptional()
   name?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
   @IsOptional()
   roles?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
   @IsOptional()
   phone_number?: string;
