@@ -1,18 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class UserListEntity {
+export class UserUpdateEntity {
   @ApiProperty()
   name: string;
 
   @ApiProperty()
   house_number: number;
 
-  // @ApiProperty()
-  // roles: string;
-
   @ApiProperty()
   phone_number: string;
 
   @ApiProperty()
   address: string;
+
+  @ApiProperty()
+  password: string;
 }

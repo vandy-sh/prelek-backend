@@ -3,7 +3,10 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Param,
+  Patch,
   Post,
+  Put,
   Query,
   Res,
   UseGuards,
@@ -28,11 +31,31 @@ import {
   UserFindManyQuery,
   UserFindManyQueryResult,
 } from '../queries/user.find.many.query';
-import { UserCreateDto, UserFindManyQueryDto } from '../dto/user.dto';
+import {
+  UserCreateDto,
+  UserFindManyQueryDto,
+  UserUpdateDto,
+} from '../dto/user.dto';
 import { UserEntity } from '../entities/user.entity';
-import { BaseHttpPaginatedResponseDto } from '../../core/dtos/base.http.response.dto';
+import {
+  BaseHttpPaginatedResponseDto,
+  BaseHttpResponseDto,
+} from '../../core/dtos/base.http.response.dto';
 import { Data } from 'aws-sdk/clients/firehose';
 import { UserListEntity } from '../entities/userlist.entity';
+// import {
+//   UserUpdateCommand,
+//   UserUpdateCommandResult,
+// } from '../commands/user.update.command';
+import {
+  UserFindByIdQuery,
+  UserFindByIdQueryResult,
+} from '../queries/user.find.byId.query';
+import { BasePaginationApiOkResponse } from '../../core/decorators/base.pagination.api.ok.response.decorator';
+import {
+  UserUpdateCommand,
+  UserUpdateCommandResult,
+} from '../commands/user.update.command';
 
 @ApiTags('User Module')
 @Controller('users')
@@ -99,44 +122,56 @@ export class UserController {
     }
   }
 
-  // @Get(':id')
-  // async findById(@Res() res: Response, @Param('id') id: string) {
-  //   const responseBuilder =
-  //     Builder<BaseHttpResponseDto<UserEntity, any>>(BaseHttpResponseDto);
-  //   responseBuilder.statusCode(200);
-  //   responseBuilder.message('User Fetched Successfully');
+  @Get(':id')
+  async findById(@Res() res: Response, @Param('id') id: string) {
+    // const responseBuilder =
+    //   Builder<BaseHttpResponseDto<UserEntity, any>>(BaseHttpResponseDto);
+    // responseBuilder.statusCode(200);
+    // responseBuilder.message('User Fetched Successfully');
 
-  //   const query = Builder<UserFindByIdQuery>(UserFindByIdQuery, {
-  //     id,
-  //   }).build();
+    const query = Builder<UserFindByIdQuery>(UserFindByIdQuery, {
+      user_id: id,
+    }).build();
 
-  //   const result = await this.queryBus.execute(query);
+    const result = await this.queryBus.execute<
+      UserFindByIdQuery,
+      UserFindByIdQueryResult
+    >(query);
 
-  //   responseBuilder.data(result);
+    return httpResponseHelper(res, {
+      message: 'data fetc succesfully',
+      data: result.data,
+    });
+  }
 
-  //   return baseHttpResponseHelper(res, responseBuilder.build());
-  // }
+  @ApiBearerAuth(JwtAuthGuard.name)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @HasRoles('ADMIN')
+  @Put('update/:id')
+  async update(
+    @Res() res: Response,
+    @Param('id') id: string,
+    @Body() dto: UserUpdateDto,
+  ) {
+    try {
+      const command = Builder<UserUpdateCommand>(UserUpdateCommand, {
+        id,
+        ...dto,
+      }).build();
 
-  // @UseGuards(TenderJwtGuard)
-  // @Post('update')
-  // async update(@Res() res: Response, @Body() dto: UserUpdateDto) {
-  //   try {
-  //     const command = Builder<UserCommand>(UserUpdateCommand, {
-  //       ...dto,
-  //     }).build();
+      console.log(`ser id ${id}`);
+      const result = await this.commandBus.execute<
+        UserUpdateCommand,
+        UserUpdateCommandResult
+      >(command);
 
-  //     const result = await this.commandBus.execute<
-  //       UserUpdateCommand,
-  //       UserUpdateCommandResult
-  //     >(command);
-
-  //     return baseHttpResponseHelper(res, {
-  //       data: result,
-  //       message: 'User Updated Successfully!',
-  //       statusCode: HttpStatus.OK,
-  //     });
-  //   } catch (e) {
-  //     throw e;
-  //   }
-  // }
+      return httpResponseHelper(res, {
+        // data: result,
+        message: 'User Updated Successfully!',
+        statusCode: HttpStatus.OK,
+      });
+    } catch (e) {
+      throw e;
+    }
+  }
 }

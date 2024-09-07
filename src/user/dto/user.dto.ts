@@ -79,3 +79,30 @@ export class UserFindManyQueryDto extends BaseFilterRequest {
   @IsOptional()
   phone_number?: string;
 }
+
+export class UserUpdateDto {
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  name: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNumber()
+  house_number: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  phone_number?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  address: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  password: string;
+}

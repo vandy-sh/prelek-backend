@@ -7,7 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { appConfig } from './core/configs/app.config';
 import { ConfigModule } from '@nestjs/config';
 import { WalletModule } from './wallet/wallet.module';
-import { WalletsModule } from './subscription/charge/wallets.module';
+// import { WalletsModule } from './subscription/charge/wallets.module';
 import { ActivityModule } from './activity/report.module';
 
 @Module({
@@ -20,7 +20,7 @@ import { ActivityModule } from './activity/report.module';
     AuthModule,
     UserModule,
     WalletModule,
-    WalletsModule,
+    // WalletsModule,
     ActivityModule,
   ],
   controllers: [AppController],
