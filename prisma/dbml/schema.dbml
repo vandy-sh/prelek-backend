@@ -14,8 +14,8 @@ Table users {
   last_login_ip String
   last_login_user_agent String
   last_login_timestamp String
-  Wallet wallet
-  Transactions transactions [not null]
+  wallet wallet
+  transactions transactions [not null]
 }
 
 Table wallet {

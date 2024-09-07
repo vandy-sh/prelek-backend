@@ -58,7 +58,7 @@ export class UserFindManyQueryHandler
         });
 
         whereInput.OR.push({
-          Wallet: {
+          wallet: {
             balance: {
               equals: parseInt(query.search_params),
             },
@@ -93,7 +93,13 @@ export class UserFindManyQueryHandler
 
       const orderQuery: Prisma.UserOrderByWithRelationInput = {};
       if (sort_by && sort_direction) {
-        orderQuery[sort_by] = sort_direction;
+        if (sort_by === 'wallet_balance') {
+          orderQuery.wallet = {
+            balance: sort_direction as 'asc' | 'desc',
+          };
+        } else {
+          orderQuery[sort_by] = sort_direction;
+        }
       } else {
         // orderQuery['created_at'] = 'desc';
       }
@@ -130,7 +136,7 @@ export class UserFindManyQueryHandler
       }
 
       args.include = {
-        Wallet: true,
+        wallet: true,
       };
 
       const userlist = await this.prisma.user.findMany(args);
