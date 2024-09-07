@@ -1,11 +1,8 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { Prisma } from '@prisma/client';
 import { BasePaginationProps } from '../../core/dtos/base.http.response.dto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { UserEntity } from '../entities/user.entity';
-import { BadRequestException } from '@nestjs/common';
-import { Builder } from 'builder-pattern';
 import { UserListEntity } from '../entities/userlist.entity';
-import { Prisma } from '@prisma/client';
 
 export class UserFindManyQueryResult {
   data: UserListEntity[];
@@ -13,6 +10,7 @@ export class UserFindManyQueryResult {
 }
 
 export class UserFindManyQuery extends BasePaginationProps {
+  search_params?: string;
   name?: string;
   house_number?: number;
   roles?: string;
@@ -27,6 +25,47 @@ export class UserFindManyQueryHandler
 
   findManyFilter(query: UserFindManyQuery) {
     const whereInput: Prisma.UserWhereInput = {}; //input berdasarkan 'nama', 'house_number', 'roles', 'phone_number' dsb
+
+    if (query.search_params && query.search_params !== '') {
+      whereInput.OR = [
+        {
+          name: {
+            contains: query.search_params,
+          },
+        },
+        {
+          phone_number: {
+            contains: query.search_params,
+          },
+        },
+        {
+          roles: {
+            contains: query.search_params,
+          },
+        },
+        {
+          email: {
+            contains: query.search_params,
+          },
+        },
+      ];
+
+      if (!isNaN(parseInt(query.search_params))) {
+        whereInput.OR.push({
+          house_number: {
+            equals: parseInt(query.search_params),
+          },
+        });
+
+        whereInput.OR.push({
+          Wallet: {
+            balance: {
+              equals: parseInt(query.search_params),
+            },
+          },
+        });
+      }
+    }
 
     if (query.name) {
       whereInput.name = {
@@ -46,18 +85,39 @@ export class UserFindManyQueryHandler
   }
 
   async execute(query: UserFindManyQuery): Promise<UserFindManyQueryResult> {
-    const { page, limit } = query;
+    const { page, limit, sort_by, sort_direction } = query;
     try {
       // console.dir(query, { depth: null });
 
       const whereClause = this.findManyFilter(query);
 
+      const orderQuery: Prisma.UserOrderByWithRelationInput = {};
+      if (sort_by && sort_direction) {
+        orderQuery[sort_by] = sort_direction;
+      } else {
+        // orderQuery['created_at'] = 'desc';
+      }
+
       const total = await this.prisma.user.count({
-        where: whereClause,
+        where: {
+          ...whereClause,
+          house_number: {
+            gt: 0,
+          },
+          roles: { equals: 'GUEST' },
+        },
+        orderBy: orderQuery,
       });
 
       const args: Prisma.UserFindManyArgs = {
-        where: whereClause,
+        where: {
+          ...whereClause,
+          house_number: {
+            gt: 0,
+          },
+          roles: { equals: 'GUEST' },
+        },
+        orderBy: orderQuery,
       };
 
       if (limit > 0) {
