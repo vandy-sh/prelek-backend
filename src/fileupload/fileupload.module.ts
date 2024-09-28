@@ -2,12 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3 } from 'aws-sdk';
 import { ManagedUpload } from 'aws-sdk/clients/s3';
-import mime from 'mime-types';
 
 import { FileMimeTypeEnum } from '../core/enums/allowed-filetype.enum';
 import { imageValidator } from '../core/utils/image-validator';
 import { uploadFileNameParser } from '../core/utils/upload-filename-parser';
-import { decodeBase64File } from '../lib/decode-base4.util';
+// import { decodeBase64File } from '../lib/decode-base4.util';
 
 @Injectable()
 export class AwsS3Service {
@@ -90,139 +89,139 @@ export class AwsS3Service {
     return response;
   }
 
-  async uploadFileOrBase64(
-    fileObject: string | Express.Multer.File,
-    folderName: string,
-  ) {
-    let fileBuffer: Buffer;
-    let mimeType: string;
-    let fileName: string;
-    let extension: string;
-    // let size: number;
+  // async uploadFileOrBase64(
+  //   fileObject: string | Express.Multer.File,
+  //   folderName: string,
+  // ) {
+  //   let fileBuffer: Buffer;
+  //   let mimeType: string;
+  //   let fileName: string;
+  //   let extension: string;
+  //   // let size: number;
 
-    const timestamp = new Date().getTime();
+  //   const timestamp = new Date().getTime();
 
-    if (typeof fileObject === 'string') {
-      const decodedFile = decodeBase64File(fileObject);
-      fileBuffer = decodedFile.data;
-      mimeType = decodedFile.type;
-      extension = mime.extension(mimeType) || '';
-      // size = fileBuffer.byteLength;
-      `fileName = ${timestamp}.${extension}`;
-      // console.log('string', fileName);
-    } else if (typeof fileObject === 'object') {
-      fileBuffer = fileObject.buffer;
-      mimeType = fileObject.mimetype;
-      extension = mime.extension(mimeType) || '';
-      // size = fileBuffer.byteLength;Learn more about JS/TS refactorings
+  //   if (typeof fileObject === 'string') {
+  //     const decodedFile = decodeBase64File(fileObject);
+  //     fileBuffer = decodedFile.data;
+  //     mimeType = decodedFile.type;
+  //     extension = mime.extension(mimeType) || '';
+  //     // size = fileBuffer.byteLength;
+  //     `fileName = ${timestamp}.${extension}`;
+  //     // console.log('string', fileName);
+  //   } else if (typeof fileObject === 'object') {
+  //     fileBuffer = fileObject.buffer;
+  //     mimeType = fileObject.mimetype;
+  //     extension = mime.extension(mimeType) || '';
+  //     // size = fileBuffer.byteLength;Learn more about JS/TS refactorings
 
-      fileName = `${timestamp}.${extension}`;
-      // console.log('testing', fileName);
-    }
+  //     fileName = `${timestamp}.${extension}`;
+  //     // console.log('testing', fileName);
+  //   }
 
-    let destination = folderName ? `${folderName}/${fileName}` : fileName;
+  //   let destination = folderName ? `${folderName}/${fileName}` : fileName;
 
-    if (this.nodeEnv !== 'production') {
-      destination = `${this.nodeEnv}/ + destination`;
-    }
+  //   if (this.nodeEnv !== 'production') {
+  //     destination = `${this.nodeEnv}/ + destination`;
+  //   }
 
-    const params: S3.Types.PutObjectRequest = {
-      Bucket: this.configService.get('awsS3.bucketName') as string,
-      Key: destination,
-      ContentType: mimeType,
-      // ACL: 'public-read',
-      Body: fileBuffer,
-    };
+  //   const params: S3.Types.PutObjectRequest = {
+  //     Bucket: this.configService.get('awsS3.bucketName') as string,
+  //     Key: destination,
+  //     ContentType: mimeType,
+  //     // ACL: 'public-read',
+  //     Body: fileBuffer,
+  //   };
 
-    let response: ManagedUpload.SendData;
-    try {
-      const res = new Promise<ManagedUpload.SendData>((resolve, reject) => {
-        this.s3
-          .upload(params, (err, data) => {
-            if (err) {
-              console.log(err);
-              reject(err.message);
-              return null;
-            }
-            resolve(data);
-          })
-          .on('httpUploadProgress', ({ loaded, total }) => {
-            console.log(
-              `Uploading ${fileName} to ${params.Bucket} bucket Progress:`,
-              loaded,
-              '/',
-              total,
-              `${Math.round((100 * loaded) / total)}%`,
-            );
-          });
-      });
-      response = await res;
-    } catch (error) {
-      throw new Error(error);
-    }
+  //   let response: ManagedUpload.SendData;
+  //   try {
+  //     const res = new Promise<ManagedUpload.SendData>((resolve, reject) => {
+  //       this.s3
+  //         .upload(params, (err, data) => {
+  //           if (err) {
+  //             console.log(err);
+  //             reject(err.message);
+  //             return null;
+  //           }
+  //           resolve(data);
+  //         })
+  //         .on('httpUploadProgress', ({ loaded, total }) => {
+  //           console.log(
+  //             `Uploading ${fileName} to ${params.Bucket} bucket Progress:`,
+  //             loaded,
+  //             '/',
+  //             total,
+  //             `${Math.round((100 * loaded) / total)}%`,
+  //           );
+  //         });
+  //     });
+  //     response = await res;
+  //   } catch (error) {
+  //     throw new Error(error);
+  //   }
 
-    return response;
-  }
+  //   return response;
+  // }
 
-  async uploadFileBase64(base64: string, fileName: string, folderName: string) {
-    let fileBuffer: Buffer;
-    let mimeType: string;
-    let extension: string;
+  // async uploadFileBase64(base64: string, fileName: string, folderName: string) {
+  //   let fileBuffer: Buffer;
+  //   let mimeType: string;
+  //   let extension: string;
 
-    const timestamp = new Date().getTime();
-    const decodedFile = decodeBase64File(base64);
-    fileBuffer = decodedFile.data;
-    mimeType = decodedFile.type;
-    extension = mime.extension(mimeType) || '';
-    fileName =
-      fileName.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10) + timestamp;
+  //   const timestamp = new Date().getTime();
+  //   const decodedFile = decodeBase64File(base64);
+  //   fileBuffer = decodedFile.data;
+  //   mimeType = decodedFile.type;
+  //   extension = mime.extension(mimeType) || '';
+  //   fileName =
+  //     fileName.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10) + timestamp;
 
-    let destination = folderName
-      ? `${folderName}/${fileName}.${extension}`
-      : `${fileName}.${extension}`;
+  //   let destination = folderName
+  //     ? `${folderName}/${fileName}.${extension}`
+  //     : `${fileName}.${extension}`;
 
-    if (this.nodeEnv !== 'production') {
-      destination = `${this.nodeEnv}/ + destination`;
-    }
+  //   if (this.nodeEnv !== 'production') {
+  //     destination = `${this.nodeEnv}/ + destination`;
+  //   }
 
-    const params: S3.Types.PutObjectRequest = {
-      Bucket: this.configService.get('awsS3.bucketName') as string,
-      Key: destination,
-      ContentType: mimeType,
-      // ACL: 'public-read',
-      Body: fileBuffer,
-    };
+  //   const params: S3.Types.PutObjectRequest = {
+  //     Bucket: this.configService.get('awsS3.bucketName') as string,
+  //     Key: destination,
+  //     ContentType: mimeType,
+  //     // ACL: 'public-read',
+  //     Body: fileBuffer,
+  //   };
 
-    let response: ManagedUpload.SendData;
-    try {
-      const res = new Promise<ManagedUpload.SendData>((resolve, reject) => {
-        this.s3
-          .upload(params, (err, data) => {
-            if (err) {
-              console.log(err);
-              reject(err.message);
-              return null;
-            }
-            resolve(data);
-          })
-          .on('httpUploadProgress', (progress) => {
-            this.logger.debug(
-              `Uploading ${fileName}.${extension} to ${params.Bucket} bucket`,
-              // Math.round((progress.loaded / progress.total) * 100) + '% done',
-            );
-          });
-      });
-      response = await res;
-    } catch (error) {
-      throw new Error(error);
-    }
+  //   let response: ManagedUpload.SendData;
+  //   try {
+  //     const res = new Promise<ManagedUpload.SendData>((resolve, reject) => {
+  //       this.s3
+  //         .upload(params, (err, data) => {
+  //           if (err) {
+  //             console.log(err);
+  //             reject(err.message);
+  //             return null;
+  //           }
+  //           resolve(data);
+  //         })
+  //         .on('httpUploadProgress', (progress) => {
+  //           this.logger.debug(
+  //             `Uploading ${fileName}.${extension} to ${params.Bucket} bucket`,
+  //             // Math.round((progress.loaded / progress.total) * 100) + '% done',
+  //           );
+  //         });
+  //     });
+  //     response = await res;
+  //   } catch (error) {
+  //     throw new Error(error);
+  //   }
 
-    if (response)
-      this.logger.debug(
-        `${fileName}.${extension} upload success, link: ${response.Location}`,
-      );
-    return response;
-  }
+  //   if (response)
+  //     this.logger.debug(
+  //       `${fileName}.${extension} upload success, link: ${response.Location}`,
+  //     );
+  //   return response;
+  // }
 
   public async uploadImage(
     file: Express.Multer.File,
