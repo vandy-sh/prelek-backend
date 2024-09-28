@@ -17,15 +17,15 @@ import { IAwsConfig } from '../../core/configs/aws-s3.config';
 
         const accessKeyId = awsS3.accessKeyId;
         const secretAccessKey = awsS3.secretAccessKey;
+        const endpoint = awsS3.endpoint;
         const region = awsS3.region;
         const bucketName = awsS3.bucketName;
-        // const s3: S3;
 
         const s3 = new S3({
           accessKeyId,
           secretAccessKey,
           region,
-          // endpoint,
+          endpoint,
         });
 
         const options: AwsS3ModuleOptions = {

@@ -15,13 +15,14 @@ import { createConfigurableDynamicRootModule } from '@golevelup/nestjs-modules';
 import { Global, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { AWS_S3_MODULE_OPTIONS, AwsS3ModuleOptions } from './types';
+import { AwsS3Service } from './usecase/aws-s3.service';
 
 @Global()
 @Module({
   imports: [CqrsModule],
   // controllers: [BunnyHttpController],
-  // providers: [BunnyService, UploadMultipartCommandHandler],
-  // exports: [BunnyService],
+  providers: [AwsS3Service],
+  exports: [AwsS3Service],
 })
 export class AwsS3Module extends createConfigurableDynamicRootModule<
   AwsS3Module,
