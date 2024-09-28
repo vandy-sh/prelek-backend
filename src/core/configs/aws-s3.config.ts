@@ -14,7 +14,7 @@ export interface IAwsConfig {
   bucketName: string;
 }
 
-export const awsS3 = registerAs('awsS3', (): IAwsConfig => {
+export const awsS3Config = registerAs('awsS3', (): IAwsConfig => {
   const values = {
     accessKeyId: process.env.AWSS3_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWSS3_SECRET_ACCESS_KEY,

@@ -14,6 +14,7 @@ import { IAwsConfig } from '../../core/configs/aws-s3.config';
       useFactory: (configService: ConfigService) => {
         // console
         const awsS3 = configService.get<IAwsConfig>('awsS3');
+        // console.dir(awsS3, { depth: null });
 
         const accessKeyId = awsS3.accessKeyId;
         const secretAccessKey = awsS3.secretAccessKey;

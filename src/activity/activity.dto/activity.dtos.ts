@@ -5,12 +5,6 @@ import { string } from 'joi';
 
 //Menggunakan upload file secara langsung dengan form-data "mutler"
 export class ActivityDto {
-  description(description: any) {
-    throw new Error('Method not implemented.');
-  }
-  price(price: any) {
-    throw new Error('Method not implemented.');
-  }
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -26,7 +20,12 @@ export class ActivityDetailDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  name: string;
+  title: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  description: string;
 
   @ApiProperty()
   @IsNotEmpty()

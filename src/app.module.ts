@@ -8,19 +8,21 @@ import { appConfig } from './core/configs/app.config';
 import { ConfigModule } from '@nestjs/config';
 import { WalletModule } from './wallet/wallet.module';
 // import { WalletsModule } from './subscription/charge/wallets.module';
-import { ActivityModule } from './activity/report.module';
+import { ActivityModule } from './activity/activity.module';
+import { NestAwsS3Module } from './lib/aws-s3/nest.aws.s3.module';
+import { awsS3Config } from './core/configs/aws-s3.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [appConfig],
+      load: [appConfig, awsS3Config],
       isGlobal: true,
     }),
     PrismaModule,
     AuthModule,
     UserModule,
     WalletModule,
-    // WalletsModule,
+    NestAwsS3Module,
     ActivityModule,
   ],
   controllers: [AppController],

@@ -4,50 +4,52 @@ import {
   HttpStatus,
   Post,
   Res,
-  UploadedFile,
   UploadedFiles,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { Builder } from 'builder-pattern';
 
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { HasRoles } from '../../auth/decorator/roles.decorator';
-import { JwtAuthGuard } from '../../auth/guards/jwt.auth.guard';
-import { RolesGuard } from '../../auth/guards/roles.guard';
 import { httpResponseHelper } from '../../core/helpers/response.helper';
 import { ActivityDto } from '../activity.dto/activity.dtos';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import {
-  ActivityCommand,
-  ActivityCommandResult,
+  ActivityAddCommand,
+  ActivityAddCommandResult,
 } from '../activity.command/activity.command';
 
 @ApiTags('active')
-@Controller('activity')
+@Controller('activities')
 export class ActivityController {
   constructor(private readonly commandBus: CommandBus) {}
 
-  @UseInterceptors(FileFieldsInterceptor([{ name: 'images' }]))
-  @Post('create/activity')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'activity_photos', maxCount: 4 },
+      { name: 'invoice_photos', maxCount: 4 },
+    ]),
+  )
+  @Post('create')
   async activities(
     @Res() res: Response,
     @Body() dto: ActivityDto,
     @UploadedFiles()
     files: {
-      images?: Express.Multer.File[];
+      activity_photos?: Express.Multer.File[];
+      invoice_photos?: Express.Multer.File[];
     },
   ) {
     try {
-      const activityCommand = Builder<ActivityCommand>(ActivityCommand, {
+      const activityCommand = Builder<ActivityAddCommand>(ActivityAddCommand, {
         ...dto,
-        photos: files.images,
+        activity_photos: files.activity_photos,
+        invoice_photos: files.invoice_photos,
       }).build();
-      const result: ActivityCommandResult = await this.commandBus.execute<
-        ActivityCommand,
-        ActivityCommandResult
+      const { data } = await this.commandBus.execute<
+        ActivityAddCommand,
+        ActivityAddCommandResult
       >(activityCommand);
 
       return httpResponseHelper(res, {

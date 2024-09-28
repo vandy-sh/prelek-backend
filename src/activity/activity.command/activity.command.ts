@@ -1,50 +1,135 @@
-import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
-import { PrismaService } from "../../prisma/prisma.service";
-import { ActivityEntity } from "../report.entity/activity.entity";
-
-export class ActivityCommand {
+import { BadRequestException } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { PrismaService } from '../../prisma/prisma.service';
+import { AwsS3Service } from '../../lib/aws-s3/usecase/aws-s3.service';
+import { MIME_TYPE } from '../../core/enums/file-mimetype.enum';
+import { FileMimeTypeEnum } from '../../core/enums/allowed-filetype.enum';
+import { nanoid } from 'nanoid';
+export class ActivityAddCommand {
   title: string;
-  photos: Express.Multer.File[];
   description: string;
   price: number;
   qty: number;
+  activity_photos: Express.Multer.File[];
+  invoice_photos: Express.Multer.File[];
 }
 
-export class ActivityCommandResult {
-  data: ActivityEntity;
+export class ActivityAddCommandResult {
+  data: any;
 }
 
-@CommandHandler(ActivityCommand)
-export class
-implements ICommandHandler<ActivityCommand,ActivityCommandResult> {
- constructor (private readonly prisma: PrismaService){}
- async execute(
-  command: ActivityCommand,
- ): Promise<ActivityCommandResult>{
+export class MediaCreateObj {
+  name: string;
+  size: number;
+  mime_type: string;
+  url: string;
+  media_type: string;
+  id?: string;
+  activity_id?: string;
+}
 
-  const photos = command.photos.map((file) => ({
-    url: file.path,             // Lokasi file yang di-upload
-      size: file.size,            // Ukuran file
-      mime_type: file.mimetype,   // Tipe MIME file
-      media_type: 'IMAGE',   
-  }));
+@CommandHandler(ActivityAddCommand)
+export class ActivityAddCommandHandler
+  implements ICommandHandler<ActivityAddCommand, ActivityAddCommandResult>
+{
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly s3: AwsS3Service,
+  ) {}
 
-  const data = await this.prisma.activity.create({
-    data: {
-      title: command.title,
-      description: command.description,
-      price: command.price,
-      qty: command.qty,
-      photos: {
-        create: photos
-      },
-      include: {
-        photos: true, // Include photos dalam hasil query
-      },
-    },
+  async upload(
+    files: Express.Multer.File[],
+    allowedFileTypes: FileMimeTypeEnum[],
+    path: string,
+    uploadedFiles: MediaCreateObj[],
+    activity_id: string,
+    media_type: string,
+  ) {
+    try {
+      // upload gambar
+      for (const file of files) {
+        const uploadedFile = await this.s3.uploadFile(
+          file,
+          allowedFileTypes,
+          path,
+        );
 
-  });
+        uploadedFiles.push({
+          id: nanoid(),
+          mime_type: uploadedFile.mime_type,
+          name: uploadedFile.name,
+          size: uploadedFile.size,
+          url: uploadedFile.url,
+          activity_id,
+          media_type,
+        });
+      }
+    } catch (error) {
+      if (uploadedFiles.length) {
+        for (const file of uploadedFiles) {
+          await this.s3.deleteFile(file.url);
+        }
+      }
+      throw error;
+    }
+  }
 
-  return { data };
- }
+  async execute(
+    command: ActivityAddCommand,
+  ): Promise<ActivityAddCommandResult> {
+    const { invoice_photos, activity_photos, ...rest } = command;
+    const uploadedFile: MediaCreateObj[] = [];
+
+    try {
+      console.dir(command, { depth: null });
+      // validasi files apakah ada file aktivitas dan file invoice
+      if (!activity_photos) {
+        throw new BadRequestException(`Activity photos is required!`);
+      }
+
+      if (!invoice_photos) {
+        throw new BadRequestException(`Invoice photos is required!`);
+      }
+
+      const activityId = nanoid();
+
+      // upload gambar
+      // upload activity
+      await this.upload(
+        activity_photos,
+        [FileMimeTypeEnum.JPEG, FileMimeTypeEnum.JPG, FileMimeTypeEnum.PNG],
+        'images/activity',
+        uploadedFile,
+        activityId,
+        'activity',
+      );
+
+      // upload invoice
+      await this.upload(
+        invoice_photos,
+        [FileMimeTypeEnum.JPEG, FileMimeTypeEnum.JPG, FileMimeTypeEnum.PNG],
+        'images/invoice',
+        uploadedFile,
+        activityId,
+        'invoice',
+      );
+
+      // buat activity
+
+      // buat Media berdasarkan uploadedFile array buat dengan prisma.media.createMany() nanti si uploadedFile cast ke unknown terus cast jadi Prisma.MediaCreateManyInput[]
+
+      // buat pengurangan ke wallet admin
+      throw new BadRequestException('Testing');
+
+      // buat transaksi
+      return new ActivityAddCommandResult();
+    } catch (error) {
+      if (uploadedFile.length) {
+        for (const file of uploadedFile) {
+          await this.s3.deleteFile(file.url);
+        }
+      }
+      throw error;
+    }
+  }
 }

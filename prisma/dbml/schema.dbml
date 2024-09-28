@@ -54,10 +54,11 @@ Table activities {
 
 Table media {
   id String [pk]
+  name String [not null]
   size Int [not null]
   mime_type String [not null]
   url String [not null]
-  media_type String [not null]
+  media_type String
   activity_id String
   Activity activities
 }

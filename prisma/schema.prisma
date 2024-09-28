@@ -90,10 +90,11 @@ model Activity {
 
 model Media {
     id String @id
+    name String
     size Int
     mime_type String
     url String
-    media_type String // foto bon / foto kegiatan
+    media_type String? // foto bon / foto kegiatan
     activity_id String?
     Activity Activity? @relation(fields: [activity_id], references: [id])
 
