@@ -20,6 +20,10 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
 import { httpResponseHelper } from '../../core/helpers/response.helper';
 import { ActivityDto } from '../activity.dto/activity.dtos';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import {
+  ActivityCommand,
+  ActivityCommandResult,
+} from '../activity.command/activity.command';
 
 @ApiTags('active')
 @Controller('activity')
@@ -27,19 +31,28 @@ export class ActivityController {
   constructor(private readonly commandBus: CommandBus) {}
 
   @UseInterceptors(FileFieldsInterceptor([{ name: 'images' }]))
-  @Post('upload')
+  @Post('create/activity')
   async activities(
     @Res() res: Response,
+    @Body() dto: ActivityDto,
     @UploadedFiles()
     files: {
       images?: Express.Multer.File[];
     },
   ) {
     try {
-      console.log(files);
+      const activityCommand = Builder<ActivityCommand>(ActivityCommand, {
+        ...dto,
+        photos: files.images,
+      }).build();
+      const result: ActivityCommandResult = await this.commandBus.execute<
+        ActivityCommand,
+        ActivityCommandResult
+      >(activityCommand);
+
       return httpResponseHelper(res, {
         statusCode: HttpStatus.OK,
-        message: 'UploadedFile Successfully!',
+        message: 'Create Activity Successfully!',
       });
     } catch (error) {
       return httpResponseHelper(res, error);

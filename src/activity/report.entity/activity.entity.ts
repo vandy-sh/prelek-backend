@@ -4,29 +4,23 @@ import { IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { string } from 'joi';
 
 //Menggunakan upload file secara langsung dengan form-data "mutler"
-export class ActivityDto {
-  description(description: any) {
-    throw new Error('Method not implemented.');
-  }
-  price(price: any) {
-    throw new Error('Method not implemented.');
-  }
+export class ActivityEntity {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  title: string;
+  title: String;
 
   @ApiProperty()
   @ValidateNested({ each: true })
-  @Type(() => ActivityDetailDto)
-  activity_detail: ActivityDetailDto[];
+  @Type(() => ActivityDetailEntity)
+  activity_detail: ActivityDetailEntity[];
 }
 
-export class ActivityDetailDto {
+export class ActivityDetailEntity {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name: String;
 
   @ApiProperty()
   @IsNotEmpty()
