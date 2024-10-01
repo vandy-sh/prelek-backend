@@ -1,10 +1,12 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AwsS3Service } from '../../lib/aws-s3/usecase/aws-s3.service';
 import { MIME_TYPE } from '../../core/enums/file-mimetype.enum';
 import { FileMimeTypeEnum } from '../../core/enums/allowed-filetype.enum';
 import { nanoid } from 'nanoid';
+import { Prisma } from '@prisma/client';
+
 export class ActivityAddCommand {
   title: string;
   description: string;
@@ -115,10 +117,46 @@ export class ActivityAddCommandHandler
       );
 
       // buat activity
+      const activityCreate = await this.prisma.activity.create({
+        data: {
+          id: activityId,
+          description: rest.description,
+          title: command.title,
+          start_date: new Date(),
+        },
+      });
 
-      // buat Media berdasarkan uploadedFile array buat dengan prisma.media.createMany() nanti si uploadedFile cast ke unknown terus cast jadi Prisma.MediaCreateManyInput[]
+      const activityTransaction = await this.prisma.$transaction(async (tx) => {
+        // buat Media berdasarkan uploadedFile array buat dengan prisma.media.createMany() nanti si uploadedFile cast ke unknown terus cast jadi Prisma.MediaCreateManyInput[]
+        await this.prisma.media.createMany({
+          data: uploadedFile as Prisma.MediaCreateManyInput[],
+        });
 
-      // buat pengurangan ke wallet admin
+        // buat pengurangan ke wallet admin
+
+        const adminWallet = await this.prisma.wallet.findFirst({
+          where: {
+            type: 'VAULT',
+          },
+          include: {
+            user: true,
+          },
+        });
+        if (!adminWallet) {
+          throw new NotFoundException(`Admin wallet not found!`);
+        }
+
+        const subscriptionAdminWallet = await this.prisma.wallet.update({
+          where: {
+            id: adminWallet.id,
+          },
+          data: {
+            balance: {
+              decrement: activityCreate.description.length * command.price,
+            },
+          },
+        });
+      });
       throw new BadRequestException('Testing');
 
       // buat transaksi

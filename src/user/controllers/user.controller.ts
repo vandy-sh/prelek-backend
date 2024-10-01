@@ -56,6 +56,8 @@ import {
   UserUpdateCommand,
   UserUpdateCommandResult,
 } from '../commands/user.update.command';
+import { GetUsageTotalsRequest } from 'aws-sdk/clients/macie2';
+import { GetTotalUsersQuery } from '../queries/user.count.query';
 
 @ApiTags('User Module')
 @Controller('users')
@@ -90,6 +92,21 @@ export class UserController {
     } catch (e) {
       throw e;
     }
+  }
+  @Get('count')
+  async getTotalUsers(@Res() res: Response) {
+    const totalUsers = (await this.commandBus.execute)<
+      GetTotalUsersQuery,
+      number
+    >(new GetTotalUsersQuery());
+    return res.status(200).json({
+      message: 'Total Users Fetched Successfully',
+      total: totalUsers,
+    });
+  }
+  catch(error: any) {
+    // Menangani error
+    throw error;
   }
 
   @Get('')
@@ -174,4 +191,6 @@ export class UserController {
       throw e;
     }
   }
+
+  // Endpoint untuk mendapatkan jumlah total user
 }

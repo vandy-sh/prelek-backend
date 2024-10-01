@@ -34,6 +34,10 @@ export class ActivityDetailDto {
   @ApiProperty()
   @IsNotEmpty()
   qty: number;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  start_date: Date;
 }
 
 //menggunakan upload file dengan binary data
