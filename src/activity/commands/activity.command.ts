@@ -104,7 +104,7 @@ export class ActivityAddCommandHandler
       await this.upload(
         activity_photos,
         [FileMimeTypeEnum.JPEG, FileMimeTypeEnum.JPG, FileMimeTypeEnum.PNG],
-        'images/activity',
+        'prelek/images/activity',
         uploadedFile,
         activityId,
         'activity',
@@ -114,7 +114,7 @@ export class ActivityAddCommandHandler
       await this.upload(
         invoice_photos,
         [FileMimeTypeEnum.JPEG, FileMimeTypeEnum.JPG, FileMimeTypeEnum.PNG],
-        'images/invoice',
+        'prelek/images/invoice',
         uploadedFile,
         activityId,
         'invoice',
