@@ -63,7 +63,7 @@ export class AwsS3Service {
 
     const params: S3.Types.PutObjectRequest = {
       Bucket: this.options.bucketName,
-      Key: fileName,
+      Key: `${path}/${fileName}`,
       ContentType: isImage ? 'image/jpeg' : file.mimetype,
       Body: buffer,
     };
