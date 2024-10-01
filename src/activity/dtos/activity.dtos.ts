@@ -1,7 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-import { string } from 'joi';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsDateString,
+  IsNotEmpty,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 //Menggunakan upload file secara langsung dengan form-data "mutler"
 export class ActivityDto {
@@ -9,6 +13,17 @@ export class ActivityDto {
   @IsString()
   @IsNotEmpty()
   title: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  description: string;
+
+  @ApiProperty()
+  @IsDateString()
+  @IsNotEmpty()
+  @Transform(({ value }) => new Date(value))
+  start_date: Date;
 
   @ApiProperty()
   @ValidateNested({ each: true })
@@ -20,7 +35,7 @@ export class ActivityDetailDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  title: string;
+  name: string;
 
   @ApiProperty()
   @IsString()
@@ -34,10 +49,6 @@ export class ActivityDetailDto {
   @ApiProperty()
   @IsNotEmpty()
   qty: number;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  start_date: Date;
 }
 
 //menggunakan upload file dengan binary data

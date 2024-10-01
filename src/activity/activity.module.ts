@@ -1,7 +1,7 @@
 import { Module, Provider } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { ActivityController } from './activity.controller/activity.controller';
-import { ActivityAddCommandHandler } from './activity.command/activity.command';
+import { ActivityController } from './controllers/activity.controller';
+import { ActivityAddCommandHandler } from './commands/activity.command';
 
 const importedModule = [CqrsModule];
 const controllers = [ActivityController];

@@ -6,8 +6,10 @@ import {
 } from '../../../core/utils/file-validation';
 import { uploadFileNameParser } from '../../../core/utils/upload-filename-parser';
 import { S3 } from 'aws-sdk';
+import sharp from 'sharp';
 import { AWS_S3_MODULE_OPTIONS, AwsS3ModuleOptions } from '../types';
 import { ManagedUpload } from 'aws-sdk/clients/s3';
+import { generateFileName } from '../../../core/utils/generate.filename';
 
 export class UploadedFileObj {
   name: string;
@@ -23,31 +25,50 @@ export class AwsS3Service {
     private readonly options: AwsS3ModuleOptions,
   ) {}
 
+  async compressAndParseImageToJpeg(buffer: Buffer): Promise<Buffer> {
+    // Compress and convert the image to JPEG format using sharp
+    const compressedImage = await sharp(buffer)
+      .resize({ width: 800 }) // Resize the image to a width of 800px, keeping aspect ratio
+      .jpeg({ quality: 80 }) // Compress the image and convert it to JPEG with 80% quality
+      .toBuffer(); // Convert the processed image to a Buffer
+    return compressedImage;
+  }
+
   public async uploadFile(
     file: Express.Multer.File,
-    FileMimeTypeEnum: FileMimeTypeEnum[],
-    path?: string,
+    allowedFileTypes: FileMimeTypeEnum[],
+    path: string,
+    maxSize: number = 1024 * 1024 * 5,
   ): Promise<UploadedFileObj> {
-    // validasi extennsion
-    validateFileExtension(file, FileMimeTypeEnum);
+    const fileName = generateFileName(
+      file.originalname,
+      file.mimetype as FileMimeTypeEnum,
+    );
 
-    // validasi size
-    validateFileSize(file);
+    validateFileExtension(file, allowedFileTypes);
+    validateFileSize(file, maxSize);
 
-    // generate name untuk filenya
-    let fileName = uploadFileNameParser(file.originalname);
-
-    if (path) {
-      fileName = path + '/' + fileName;
+    let buffer = file.buffer;
+    let isImage = false;
+    //if the file is an image (parse to jpeg and compress)
+    if (
+      [
+        FileMimeTypeEnum.JPEG,
+        FileMimeTypeEnum.JPG,
+        FileMimeTypeEnum.PNG,
+      ].indexOf(file.mimetype as FileMimeTypeEnum) !== -1
+    ) {
+      isImage = true;
+      buffer = await this.compressAndParseImageToJpeg(file.buffer);
     }
 
     const params: S3.Types.PutObjectRequest = {
       Bucket: this.options.bucketName,
       Key: fileName,
-      ContentType: file.mimetype,
-      // ACL: 'public-read',
-      Body: file.buffer,
+      ContentType: isImage ? 'image/jpeg' : file.mimetype,
+      Body: buffer,
     };
+
     let response: ManagedUpload.SendData;
 
     try {
@@ -65,9 +86,9 @@ export class AwsS3Service {
 
       return {
         name: fileName,
-        mime_type: file.mimetype,
+        size: isImage ? buffer.length : file.size,
+        mime_type: isImage ? 'image/jpeg' : file.mimetype,
         url: response.Location,
-        size: file.size,
         aws_obj: response,
       };
     } catch (error) {

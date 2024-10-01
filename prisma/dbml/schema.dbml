@@ -39,8 +39,8 @@ Table transactions {
   update_at DateTime [not null]
   user users [not null]
   wallet wallet
-  Activity activities
-  Transaction_detail transaction_details [not null]
+  activity activities
+  activity_details activity_details [not null]
 }
 
 Table activities {
@@ -48,8 +48,10 @@ Table activities {
   title String [not null]
   description String [not null]
   start_date DateTime [not null]
+  transaction_id String [unique, not null]
   photos media [not null]
-  Transaction transactions [not null]
+  transaction transactions [not null]
+  activity_details activity_details [not null]
 }
 
 Table media {
@@ -63,14 +65,16 @@ Table media {
   Activity activities
 }
 
-Table transaction_details {
+Table activity_details {
   id String [pk]
+  activity_id String [not null]
+  activity activities [not null]
   transaction_id String [not null]
+  transaction transactions [not null]
   title String [not null]
   description String [not null]
   price Int [not null]
   quantity Int [not null]
-  transactionid transactions [not null]
 }
 
 Ref: wallet.userid - users.user_id
@@ -79,8 +83,10 @@ Ref: transactions.user_id > users.user_id
 
 Ref: transactions.wallet_id > wallet.id
 
-Ref: transactions.activity_id > activities.id
+Ref: activities.transaction_id - transactions.id
 
 Ref: media.activity_id > activities.id
 
-Ref: transaction_details.transaction_id > transactions.id
+Ref: activity_details.activity_id > activities.id
+
+Ref: activity_details.transaction_id > transactions.id

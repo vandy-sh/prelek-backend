@@ -14,11 +14,11 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { httpResponseHelper } from '../../core/helpers/response.helper';
-import { ActivityDto } from '../activity.dto/activity.dtos';
+import { ActivityDto } from '../dtos/activity.dtos';
 import {
   ActivityAddCommand,
   ActivityAddCommandResult,
-} from '../activity.command/activity.command';
+} from '../commands/activity.command';
 
 @ApiTags('active')
 @Controller('activities')

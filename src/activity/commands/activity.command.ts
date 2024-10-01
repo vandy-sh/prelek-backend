@@ -1,23 +1,25 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PrismaService } from '../../prisma/prisma.service';
-import { AwsS3Service } from '../../lib/aws-s3/usecase/aws-s3.service';
-import { MIME_TYPE } from '../../core/enums/file-mimetype.enum';
-import { FileMimeTypeEnum } from '../../core/enums/allowed-filetype.enum';
-import { nanoid } from 'nanoid';
 import { Prisma } from '@prisma/client';
+import { nanoid } from 'nanoid';
+import { FileMimeTypeEnum } from '../../core/enums/allowed-filetype.enum';
+import { AwsS3Service } from '../../lib/aws-s3/usecase/aws-s3.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { ActivityDetailDto } from '../dtos/activity.dtos';
+import { TRANSACTION_TYPE_ENUM } from '../../transaction/entities/transaction.entities';
+import { ActivityEntity } from '../entities/activity.entity';
 
 export class ActivityAddCommand {
   title: string;
   description: string;
-  price: number;
-  qty: number;
+  start_date: Date;
   activity_photos: Express.Multer.File[];
   invoice_photos: Express.Multer.File[];
+  activity_detail: ActivityDetailDto[];
 }
 
 export class ActivityAddCommandResult {
-  data: any;
+  data: ActivityEntity;
 }
 
 export class MediaCreateObj {
@@ -43,7 +45,7 @@ export class ActivityAddCommandHandler
     files: Express.Multer.File[],
     allowedFileTypes: FileMimeTypeEnum[],
     path: string,
-    uploadedFiles: MediaCreateObj[],
+    uploadedFiles: Prisma.MediaCreateManyInput[],
     activity_id: string,
     media_type: string,
   ) {
@@ -79,11 +81,12 @@ export class ActivityAddCommandHandler
   async execute(
     command: ActivityAddCommand,
   ): Promise<ActivityAddCommandResult> {
-    const { invoice_photos, activity_photos, ...rest } = command;
-    const uploadedFile: MediaCreateObj[] = [];
+    const { invoice_photos, activity_photos, activity_detail, ...rest } =
+      command;
+    const uploadedFile: Prisma.MediaCreateManyInput[] = [];
 
     try {
-      console.dir(command, { depth: null });
+      // console.dir(command, { depth: null });
       // validasi files apakah ada file aktivitas dan file invoice
       if (!activity_photos) {
         throw new BadRequestException(`Activity photos is required!`);
@@ -94,6 +97,7 @@ export class ActivityAddCommandHandler
       }
 
       const activityId = nanoid();
+      const transactionId = nanoid();
 
       // upload gambar
       // upload activity
@@ -116,25 +120,40 @@ export class ActivityAddCommandHandler
         'invoice',
       );
 
-      // buat activity
-      const activityCreate = await this.prisma.activity.create({
-        data: {
-          id: activityId,
-          description: rest.description,
-          title: command.title,
-          start_date: new Date(),
-        },
-      });
-
-      const activityTransaction = await this.prisma.$transaction(async (tx) => {
-        // buat Media berdasarkan uploadedFile array buat dengan prisma.media.createMany() nanti si uploadedFile cast ke unknown terus cast jadi Prisma.MediaCreateManyInput[]
-        await this.prisma.media.createMany({
-          data: uploadedFile as Prisma.MediaCreateManyInput[],
+      // const transactionDetail:
+      const activities: Prisma.ActivityDetailsCreateManyInput[] = [];
+      let totalSpend = 0;
+      for (const detail of activity_detail) {
+        activities.push({
+          id: nanoid(),
+          activity_id: activityId,
+          transaction_id: transactionId,
+          title: detail.name,
+          description: detail.description,
+          price: detail.price,
+          quantity: detail.qty,
         });
 
-        // buat pengurangan ke wallet admin
+        totalSpend += detail.price;
+      }
 
-        const adminWallet = await this.prisma.wallet.findFirst({
+      const dbProcess = await this.prisma.$transaction(async (tx) => {
+        // buat activity
+        await tx.activity.create({
+          data: {
+            id: activityId,
+            transaction_id: transactionId,
+            ...rest,
+          },
+        });
+
+        // buat Media berdasarkan uploadedFile array buat dengan prisma.media.createMany() nanti si uploadedFile cast ke unknown terus cast jadi Prisma.MediaCreateManyInput[]
+        await tx.media.createMany({
+          data: uploadedFile,
+        });
+
+        // cari  admin wallet
+        const adminWallet = await tx.wallet.findFirst({
           where: {
             type: 'VAULT',
           },
@@ -146,21 +165,56 @@ export class ActivityAddCommandHandler
           throw new NotFoundException(`Admin wallet not found!`);
         }
 
-        const subscriptionAdminWallet = await this.prisma.wallet.update({
+        // jika admin wallet saldonya kurang dari totalSpend maka throw error
+        if (adminWallet.balance < totalSpend) {
+          throw new BadRequestException(`Admin wallet balance is not enough!`);
+        }
+
+        // kurangi admin wallet
+        await tx.wallet.update({
           where: {
             id: adminWallet.id,
           },
           data: {
             balance: {
-              decrement: activityCreate.description.length * command.price,
+              decrement: totalSpend,
             },
           },
         });
-      });
-      throw new BadRequestException('Testing');
 
-      // buat transaksi
-      return new ActivityAddCommandResult();
+        // buat transaksi
+        await tx.transaction.create({
+          data: {
+            id: transactionId,
+            total_amount: totalSpend,
+            transaction_type: TRANSACTION_TYPE_ENUM.EXPANSES,
+            activity_id: activityId,
+            user_id: adminWallet.userid,
+            wallet_id: adminWallet.id,
+          },
+        });
+
+        // buat transaction detail
+        await tx.activityDetails.createMany({
+          data: activities,
+        });
+
+        const createdActivities = tx.activity.findFirst({
+          where: {
+            id: activityId,
+          },
+          include: {
+            activity_details: true,
+            photos: true,
+          },
+        });
+
+        return createdActivities;
+      });
+
+      return {
+        data: dbProcess,
+      };
     } catch (error) {
       if (uploadedFile.length) {
         for (const file of uploadedFile) {

@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { FileMimeTypeEnum } from '../enums/allowed-filetype.enum';
+import { convertBytesToMB } from './bytes-to-mb-converter';
 
 /**
  * Func to validate the allowed file type
@@ -9,16 +10,19 @@ import { FileMimeTypeEnum } from '../enums/allowed-filetype.enum';
  * @author RDanang (Iyoy)
  */
 export function validateFileExtension(
-  file: Express.Multer.File | string,
+  file: Express.Multer.File,
   allowed: FileMimeTypeEnum[],
 ): boolean {
-  const fileExtension = typeof file === 'string' ? file : file.mimetype;
-  if (!allowed.includes(fileExtension as FileMimeTypeEnum)) {
-    throw new BadRequestException(
-      `File extension ${fileExtension} is not allowed`,
-    );
+  try {
+    if (!allowed.includes(file.mimetype as FileMimeTypeEnum)) {
+      throw new BadRequestException(
+        `File ${file.originalname} extension ${file.mimetype} is not allowed, allowed extensions are: ${allowed}`,
+      );
+    }
+    return true;
+  } catch (error) {
+    throw error;
   }
-  return true;
 }
 
 /**
@@ -29,14 +33,19 @@ export function validateFileExtension(
  * @author RDanang (Iyoy)
  */
 export function validateFileSize(
-  file: Express.Multer.File | number,
-  maxSize: number = 1024 * 1024 * 30, // 30MB (default)
+  file: Express.Multer.File,
+  maxSize?: number,
 ): boolean {
-  const fileSize = typeof file === 'number' ? file : file.size;
-  if (fileSize > maxSize) {
-    throw new BadRequestException(
-      `File size ${fileSize} is larger than ${maxSize} bytes`,
-    );
+  try {
+    const max = maxSize ? maxSize : 1024 * 1024 * 5; // default is 5MB
+
+    if (file.size > max) {
+      throw new BadRequestException(
+        `File ${file.originalname} size ${convertBytesToMB(file.size)} is larger than ${convertBytesToMB(max)} bytes`,
+      );
+    }
+    return true;
+  } catch (error) {
+    throw error;
   }
-  return true;
 }

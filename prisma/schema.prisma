@@ -60,15 +60,16 @@ model Transaction {
   transaction_type   String                // TOP_UP, EXPANSES, SUBSCRIPTION_EXPANSES , INCOME
   total_amount       Int
   wallet_id          String?
-  activity_id        String?
+  activity_id        String?             
   user_id            String 
   status             String               @default("PENDING")
   created_at         DateTime             @default(now())
+  
   update_at          DateTime             @updatedAt
   user               User                 @relation(fields: [user_id], references: [user_id])
-  wallet             Wallet? @relation(fields: [wallet_id], references: [id])
-  Activity           Activity? @relation(fields: [activity_id], references: [id])
-  Transaction_detail Transaction_detail[]
+  wallet             Wallet?              @relation(fields: [wallet_id], references: [id])
+  activity           Activity?
+  activity_details   ActivityDetails[]
 
   @@index([id])
   @@index([transaction_type])
@@ -81,10 +82,12 @@ model Activity {
     title String
     description String
     start_date DateTime
+    transaction_id String @unique()
     photos Media[]
 
+    transaction  Transaction @relation(fields: [transaction_id], references: [id])
+    activity_details ActivityDetails[]
     @@map("activities")
-    Transaction Transaction[]
 }
 
 
@@ -102,15 +105,17 @@ model Media {
 }
 
 
-model Transaction_detail {
+model ActivityDetails {
   id             String      @id
+  activity_id    String
+  activity       Activity    @relation(fields: [activity_id], references: [id])
   transaction_id String
+  transaction    Transaction @relation(fields: [transaction_id], references: [id])
   title          String
   description    String
   price          Int
   quantity       Int
-  transactionid  Transaction @relation(fields: [transaction_id], references: [id])
 
   @@index([transaction_id])
-  @@map("transaction_details")
+  @@map("activity_details")
 }
