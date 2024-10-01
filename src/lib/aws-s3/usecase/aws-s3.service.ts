@@ -1,15 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { S3 } from 'aws-sdk';
+import { ManagedUpload } from 'aws-sdk/clients/s3';
+import sharp from 'sharp';
 import { FileMimeTypeEnum } from '../../../core/enums/allowed-filetype.enum';
 import {
   validateFileExtension,
   validateFileSize,
 } from '../../../core/utils/file-validation';
-import { uploadFileNameParser } from '../../../core/utils/upload-filename-parser';
-import { S3 } from 'aws-sdk';
-import sharp from 'sharp';
-import { AWS_S3_MODULE_OPTIONS, AwsS3ModuleOptions } from '../types';
-import { ManagedUpload } from 'aws-sdk/clients/s3';
 import { generateFileName } from '../../../core/utils/generate.filename';
+import { AWS_S3_MODULE_OPTIONS, AwsS3ModuleOptions } from '../types';
 
 export class UploadedFileObj {
   name: string;

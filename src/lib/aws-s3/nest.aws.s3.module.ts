@@ -27,6 +27,7 @@ import { IAwsConfig } from '../../core/configs/aws-s3.config';
           secretAccessKey,
           region,
           endpoint,
+          useAccelerateEndpoint: true,
         });
 
         const options: AwsS3ModuleOptions = {

@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
+import { FileMimeTypeEnum } from '../enums/allowed-filetype.enum';
 // import { MulterFile } from '@webundsoehne/nest-fastify-file-upload/dist/interfaces/multer-options.interface';
-import { MIME_TYPE } from '../enums/file-mimetype.enum';
 
 /**
  * Func to validate the allowed file type
@@ -11,14 +11,14 @@ import { MIME_TYPE } from '../enums/file-mimetype.enum';
  */
 export function validateAllowedExtension(
   fileOrMimeType: Express.Multer.File | string,
-  allowed: MIME_TYPE[],
+  allowed: FileMimeTypeEnum[],
 ): boolean {
   const fileExtension =
     typeof fileOrMimeType === 'string'
       ? fileOrMimeType
       : fileOrMimeType.mimetype;
 
-  if (!allowed.includes(fileExtension as MIME_TYPE)) {
+  if (!allowed.includes(fileExtension as FileMimeTypeEnum)) {
     throw new BadRequestException(
       `File extension ${fileExtension} is not allowed, allowed extensions are: ${allowed}`,
     );
@@ -28,7 +28,7 @@ export function validateAllowedExtension(
 
 export function validateFileExtension(
   fileOrMimeType: Express.Multer.File | string,
-  allowed: MIME_TYPE[],
+  allowed: FileMimeTypeEnum[],
   fileName?: string,
 ): boolean {
   try {
@@ -37,7 +37,7 @@ export function validateFileExtension(
         ? fileOrMimeType
         : fileOrMimeType.mimetype;
 
-    if (!allowed.includes(fileExtension as MIME_TYPE)) {
+    if (!allowed.includes(fileExtension as FileMimeTypeEnum)) {
       throw new BadRequestException(
         `File${
           fileName ? `(${fileName})` : ''
