@@ -10,7 +10,6 @@ export interface IAwsConfig {
   accessKeyId: string;
   secretAccessKey: string;
   region: string;
-  endpoint: string;
   bucketName: string;
 }
 
@@ -19,7 +18,6 @@ export const awsS3Config = registerAs('awsS3', (): IAwsConfig => {
     accessKeyId: process.env.AWSS3_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWSS3_SECRET_ACCESS_KEY,
     region: process.env.AWSS3_REGION,
-    endpoint: process.env.AWSS3_ENDPOINT,
     bucketName: process.env.AWSS3_BUCKET_NAME,
   };
 
@@ -27,7 +25,6 @@ export const awsS3Config = registerAs('awsS3', (): IAwsConfig => {
     accessKeyId: baseJoiRequiredString('AWSS3_ACCESS_KEY_ID'),
     secretAccessKey: baseJoiRequiredString('AWSS3_SECRET_ACCESS_KEY'),
     region: baseJoiRequiredString('AWSS3_REGION'),
-    endpoint: baseJoiRequiredString('AWSS3_ENDPOINT'),
     bucketName: baseJoiRequiredString('AWSS3_BUCKET_NAME'),
   });
 

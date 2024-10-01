@@ -138,20 +138,6 @@ export class ActivityAddCommandHandler
       }
 
       const dbProcess = await this.prisma.$transaction(async (tx) => {
-        // buat activity
-        await tx.activity.create({
-          data: {
-            id: activityId,
-            transaction_id: transactionId,
-            ...rest,
-          },
-        });
-
-        // buat Media berdasarkan uploadedFile array buat dengan prisma.media.createMany() nanti si uploadedFile cast ke unknown terus cast jadi Prisma.MediaCreateManyInput[]
-        await tx.media.createMany({
-          data: uploadedFile,
-        });
-
         // cari  admin wallet
         const adminWallet = await tx.wallet.findFirst({
           where: {
@@ -194,7 +180,21 @@ export class ActivityAddCommandHandler
           },
         });
 
-        // buat transaction detail
+        // buat activity
+        await tx.activity.create({
+          data: {
+            id: activityId,
+            transaction_id: transactionId,
+            ...rest,
+          },
+        });
+
+        // buat Media berdasarkan uploadedFile array buat dengan prisma.media.createMany() nanti si uploadedFile cast ke unknown terus cast jadi Prisma.MediaCreateManyInput[]
+        await tx.media.createMany({
+          data: uploadedFile,
+        });
+
+        // buat activity detail
         await tx.activityDetails.createMany({
           data: activities,
         });
@@ -216,7 +216,11 @@ export class ActivityAddCommandHandler
         data: dbProcess,
       };
     } catch (error) {
+      console.dir(error, { depth: null });
       if (uploadedFile.length) {
+        // console.log(
+        //   'theres a file but command failed to run so deleting file..',
+        // );
         for (const file of uploadedFile) {
           await this.s3.deleteFile(file.url);
         }

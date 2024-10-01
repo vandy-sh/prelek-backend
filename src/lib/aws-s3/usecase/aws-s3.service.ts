@@ -26,6 +26,8 @@ export class AwsS3Service {
 
   async compressAndParseImageToJpeg(buffer: Buffer): Promise<Buffer> {
     // Compress and convert the image to JPEG format using sharp
+    // console.log('Compressing image...');
+    // console.log('buffer: ', buffer);
     const compressedImage = await sharp(buffer)
       .resize({ width: 800 }) // Resize the image to a width of 800px, keeping aspect ratio
       .jpeg({ quality: 80 }) // Compress the image and convert it to JPEG with 80% quality
@@ -98,12 +100,12 @@ export class AwsS3Service {
   public async deleteFile(
     filePath: string,
   ): Promise<S3.Types.DeleteObjectOutput> {
-    if (
-      filePath.match(/https:\/\/.?\/(.)/) &&
-      filePath.match(/https:\/\/.?\/(.)/)[1]
-    ) {
-      filePath = filePath.match(/https:\/\/.?\/(.)/)[1];
+    // console.log('filePath: ', filePath);
+    const match = filePath.match(/https:\/\/[^\/]+\/(.+)/); // Modified regex
+    if (match && match[1]) {
+      filePath = match[1];
     }
+    // console.log('filePath: ', filePath);
 
     const params: S3.Types.DeleteObjectRequest = {
       Bucket: this.options.bucketName,

@@ -47,17 +47,19 @@ export class ActivityController {
         activity_photos: files.activity_photos,
         invoice_photos: files.invoice_photos,
       }).build();
+
       const { data } = await this.commandBus.execute<
         ActivityAddCommand,
         ActivityAddCommandResult
       >(activityCommand);
 
       return httpResponseHelper(res, {
+        data: data,
         statusCode: HttpStatus.OK,
         message: 'Create Activity Successfully!',
       });
     } catch (error) {
-      return httpResponseHelper(res, error);
+      throw error;
     }
   }
 }

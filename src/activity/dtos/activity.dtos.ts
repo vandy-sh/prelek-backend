@@ -1,8 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
-  IsDateString,
+  IsArray,
+  IsDate,
   IsNotEmpty,
+  IsNumber,
+  IsNumberString,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -20,13 +23,15 @@ export class ActivityDto {
   description: string;
 
   @ApiProperty()
-  @IsDateString()
+  @IsDate()
   @IsNotEmpty()
   @Transform(({ value }) => new Date(value))
   start_date: Date;
 
   @ApiProperty()
-  @ValidateNested({ each: true })
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested()
   @Type(() => ActivityDetailDto)
   activity_detail: ActivityDetailDto[];
 }
@@ -43,11 +48,15 @@ export class ActivityDetailDto {
   description: string;
 
   @ApiProperty()
+  @IsNumber()
   @IsNotEmpty()
+  @Type(() => Number)
   price: number;
 
   @ApiProperty()
+  @IsNumber()
   @IsNotEmpty()
+  @Type(() => Number)
   qty: number;
 }
 

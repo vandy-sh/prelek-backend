@@ -18,7 +18,6 @@ import { IAwsConfig } from '../../core/configs/aws-s3.config';
 
         const accessKeyId = awsS3.accessKeyId;
         const secretAccessKey = awsS3.secretAccessKey;
-        const endpoint = awsS3.endpoint;
         const region = awsS3.region;
         const bucketName = awsS3.bucketName;
 
@@ -26,8 +25,6 @@ import { IAwsConfig } from '../../core/configs/aws-s3.config';
           accessKeyId,
           secretAccessKey,
           region,
-          endpoint,
-          useAccelerateEndpoint: true,
         });
 
         const options: AwsS3ModuleOptions = {
