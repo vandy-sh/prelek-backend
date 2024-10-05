@@ -1,21 +1,28 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { S3 } from 'aws-sdk';
-import { ManagedUpload } from 'aws-sdk/clients/s3';
+
 import sharp from 'sharp';
+import { AWS_S3_MODULE_OPTIONS, AwsS3ModuleOptions } from '../types';
+import {
+  CompleteMultipartUploadCommandOutput,
+  DeleteObjectsCommand,
+  DeleteObjectsCommandOutput,
+  PutObjectCommandInput,
+} from '@aws-sdk/client-s3';
 import { FileMimeTypeEnum } from '../../../core/enums/allowed-filetype.enum';
+import { generateFileName } from '../../../core/utils/generate.filename';
 import {
   validateFileExtension,
   validateFileSize,
 } from '../../../core/utils/file-validation';
-import { generateFileName } from '../../../core/utils/generate.filename';
-import { AWS_S3_MODULE_OPTIONS, AwsS3ModuleOptions } from '../types';
+import { Upload } from '@aws-sdk/lib-storage';
 
 export class UploadedFileObj {
   name: string;
   size: number;
   mime_type: string;
   url: string;
-  aws_obj: ManagedUpload.SendData;
+  path: string;
+  aws_obj: CompleteMultipartUploadCommandOutput;
 }
 @Injectable()
 export class AwsS3Service {
@@ -23,6 +30,13 @@ export class AwsS3Service {
     @Inject(AWS_S3_MODULE_OPTIONS)
     private readonly options: AwsS3ModuleOptions,
   ) {}
+  removeDomainNameFromUrl(path: string): string {
+    const match = path.match(/https:\/\/[^\/]+\/(.+)/); // Modified regex
+    if (match && match[1]) {
+      path = match[1];
+    }
+    return path;
+  }
 
   async compressAndParseImageToJpeg(buffer: Buffer): Promise<Buffer> {
     // Compress and convert the image to JPEG format using sharp
@@ -37,16 +51,16 @@ export class AwsS3Service {
 
   public async uploadFile(
     file: Express.Multer.File,
-    allowedFileTypes: FileMimeTypeEnum[],
-    path: string,
-    maxSize: number = 1024 * 1024 * 5,
+    uploadPath: string,
+    AllowedFileTypes: FileMimeTypeEnum[],
+    maxSize: number = 1024 * 1024 * 5, // 5 mb by default
   ): Promise<UploadedFileObj> {
     const fileName = generateFileName(
       file.originalname,
       file.mimetype as FileMimeTypeEnum,
     );
 
-    validateFileExtension(file, allowedFileTypes);
+    validateFileExtension(file, AllowedFileTypes);
     validateFileSize(file, maxSize);
 
     let buffer = file.buffer;
@@ -63,77 +77,83 @@ export class AwsS3Service {
       buffer = await this.compressAndParseImageToJpeg(file.buffer);
     }
 
-    const params: S3.Types.PutObjectRequest = {
+    const finalPath = `${uploadPath}/${fileName}`;
+
+    const params: PutObjectCommandInput = {
       Bucket: this.options.bucketName,
-      Key: `${path}/${fileName}`,
+      Key: finalPath,
       ContentType: isImage ? 'image/jpeg' : file.mimetype,
       Body: buffer,
     };
 
-    let response: ManagedUpload.SendData;
-
     try {
-      const res = new Promise<ManagedUpload.SendData>((resolve, reject) => {
-        this.options.s3.upload(params, (err, data) => {
-          if (err) {
-            console.log(err);
-            reject(err.message);
-            return null;
-          }
-          resolve(data);
-        });
+      const parallelUploads3 = new Upload({
+        client: this.options.s3,
+        params,
+        // (optional) concurrency configuration
+        queueSize: 10,
+        // (optional) size of each part, in bytes, at least 5MB
+        partSize: 1024 * 1024 * 5,
+        // (optional) when true, do not automatically call AbortMultipartUpload when
+        // a multipart upload fails to complete. You should then manually handle
+        // the leftover parts.
+        leavePartsOnError: false,
       });
-      response = await res;
+
+      // let totalUploadedParts = 1;
+      // let totalParts = Math.ceil(buffer.length / (1024 * 1024 * 5));
+      parallelUploads3.on('httpUploadProgress', (progress) => {
+        // console.log(
+        //   `progress - ${progress.loaded}/${progress.total}, processing part: ${progress.part}, uploaded part [${totalUploadedParts}/${totalParts}]`,
+        // );
+        // console.log(progress);
+        // totalUploadedParts++;
+      });
+
+      const response = await parallelUploads3.done();
+      // console.dir(response, { depth: null });
+      // console.log(response.Location);
 
       return {
         name: fileName,
-        size: isImage ? buffer.length : file.size,
-        mime_type: isImage ? 'image/jpeg' : file.mimetype,
-        url: response.Location,
+        mime_type: file.mimetype,
+        url: response.Location!,
+        size: file.size,
+        path: finalPath,
         aws_obj: response,
       };
     } catch (error) {
-      throw new Error(error);
+      console.dir(error);
+      throw error;
     }
   }
 
   public async deleteFile(
-    filePath: string,
-  ): Promise<S3.Types.DeleteObjectOutput> {
-    // console.log('filePath: ', filePath);
-    const match = filePath.match(/https:\/\/[^\/]+\/(.+)/); // Modified regex
-    if (match && match[1]) {
-      filePath = match[1];
-    }
-    // console.log('filePath: ', filePath);
+    paths: string[],
+  ): Promise<DeleteObjectsCommandOutput> {
+    const newPath = paths.map((path) => {
+      return {
+        Key: this.removeDomainNameFromUrl(path),
+      };
+    });
 
-    const params: S3.Types.DeleteObjectRequest = {
+    console.log(`deleting files: ${JSON.stringify(newPath)}`);
+
+    const command = new DeleteObjectsCommand({
       Bucket: this.options.bucketName,
-      Key: filePath,
-    };
-
-    let response: S3.Types.DeleteObjectOutput;
+      Delete: {
+        Objects: newPath,
+      },
+    });
 
     try {
-      const res = new Promise<S3.Types.DeleteObjectOutput>(
-        (resolve, reject) => {
-          this.options.s3
-            .deleteObject(params, (err, data) => {
-              if (err)
-                console.log(err, err.stack); // an error occurred
-              else {
-                resolve(data);
-              }
-            })
-            .on('error', (err) => {
-              reject(err);
-            });
-        },
-      );
-      response = await res;
-    } catch (error) {
-      throw new Error(error);
+      const response = await this.options.s3.send(command);
+      console.log('delete response');
+      console.dir(response, { depth: null });
+      return response;
+    } catch (err) {
+      console.error(err);
+      throw err;
     }
-    return response;
   }
 }

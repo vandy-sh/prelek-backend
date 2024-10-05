@@ -1,4 +1,4 @@
-import { S3 } from 'aws-sdk';
+import { S3 } from '@aws-sdk/client-s3';
 
 export class AwsS3ModuleOptions {
   accessKeyId: string;

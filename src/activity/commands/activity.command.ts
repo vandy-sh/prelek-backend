@@ -54,8 +54,8 @@ export class ActivityAddCommandHandler
       for (const file of files) {
         const uploadedFile = await this.s3.uploadFile(
           file,
-          allowedFileTypes,
           path,
+          allowedFileTypes,
         );
 
         uploadedFiles.push({
@@ -70,9 +70,8 @@ export class ActivityAddCommandHandler
       }
     } catch (error) {
       if (uploadedFiles.length) {
-        for (const file of uploadedFiles) {
-          await this.s3.deleteFile(file.url);
-        }
+        const urls = uploadedFiles.map((file) => file.url);
+        await this.s3.deleteFile(urls);
       }
       throw error;
     }
@@ -221,9 +220,8 @@ export class ActivityAddCommandHandler
         // console.log(
         //   'theres a file but command failed to run so deleting file..',
         // );
-        for (const file of uploadedFile) {
-          await this.s3.deleteFile(file.url);
-        }
+        const urls = uploadedFile.map((file) => file.url);
+        await this.s3.deleteFile(urls);
       }
       throw error;
     }

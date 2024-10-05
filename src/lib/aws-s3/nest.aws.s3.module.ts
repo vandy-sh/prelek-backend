@@ -2,9 +2,10 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AwsS3Module } from './aws-s3.module';
-import { S3 } from 'aws-sdk';
+
 import { AwsS3ModuleOptions } from './types';
 import { IAwsConfig } from '../../core/configs/aws-s3.config';
+import { S3 } from '@aws-sdk/client-s3';
 
 @Global()
 @Module({
@@ -22,9 +23,11 @@ import { IAwsConfig } from '../../core/configs/aws-s3.config';
         const bucketName = awsS3.bucketName;
 
         const s3 = new S3({
-          accessKeyId,
-          secretAccessKey,
           region,
+          credentials: {
+            accessKeyId,
+            secretAccessKey,
+          },
         });
 
         const options: AwsS3ModuleOptions = {
