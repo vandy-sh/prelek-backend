@@ -41,7 +41,6 @@ import {
   BaseHttpPaginatedResponseDto,
   BaseHttpResponseDto,
 } from '../../core/dtos/base.http.response.dto';
-import { Data } from 'aws-sdk/clients/firehose';
 import { UserListEntity } from '../entities/userlist.entity';
 // import {
 //   UserUpdateCommand,
@@ -51,12 +50,10 @@ import {
   UserFindByIdQuery,
   UserFindByIdQueryResult,
 } from '../queries/user.find.byId.query';
-import { BasePaginationApiOkResponse } from '../../core/decorators/base.pagination.api.ok.response.decorator';
 import {
   UserUpdateCommand,
   UserUpdateCommandResult,
 } from '../commands/user.update.command';
-import { GetUsageTotalsRequest } from 'aws-sdk/clients/macie2';
 import { GetTotalUsersQuery } from '../queries/user.count.query';
 
 @ApiTags('User Module')
