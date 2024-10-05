@@ -6,7 +6,10 @@ import { FileMimeTypeEnum } from '../../core/enums/allowed-filetype.enum';
 import { AwsS3Service } from '../../lib/aws-s3/usecase/aws-s3.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ActivityDetailDto } from '../dtos/activity.dtos';
-import { TRANSACTION_TYPE_ENUM } from '../../transaction/entities/transaction.entities';
+import {
+  TRANSACTION_STATUS_ENUM,
+  TRANSACTION_TYPE_ENUM,
+} from '../../transaction/entities/transaction.entities';
 import { ActivityEntity } from '../entities/activity.entity';
 
 export class ActivityAddCommand {
@@ -176,6 +179,7 @@ export class ActivityAddCommandHandler
             activity_id: activityId,
             user_id: adminWallet.userid,
             wallet_id: adminWallet.id,
+            status: TRANSACTION_STATUS_ENUM.SUCCESS,
           },
         });
 

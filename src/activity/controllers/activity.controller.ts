@@ -5,13 +5,14 @@ import {
   Post,
   Res,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { Builder } from 'builder-pattern';
 
 import { CommandBus } from '@nestjs/cqrs';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { httpResponseHelper } from '../../core/helpers/response.helper';
 import { ActivityDto } from '../dtos/activity.dtos';
@@ -19,12 +20,18 @@ import {
   ActivityAddCommand,
   ActivityAddCommandResult,
 } from '../commands/activity.command';
+import { JwtAuthGuard } from '../../auth/guards/jwt.auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
+import { HasRoles } from '../../auth/decorator/roles.decorator';
 
 @ApiTags('active')
 @Controller('activities')
 export class ActivityController {
   constructor(private readonly commandBus: CommandBus) {}
 
+  @ApiBearerAuth(JwtAuthGuard.name)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @HasRoles('FINANCE')
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'activity_photos', maxCount: 4 },
@@ -63,20 +70,3 @@ export class ActivityController {
     }
   }
 }
-// {
-//     try {
-//       const command = Builder<ActivityCommand>(ActivityCommand, {
-//         ...dto,
-//       }).build();
-//       const { data } = await this.commandBus.execute<
-//         ActivityCommand,
-//         ActivityCommandResult
-//       >(command);
-//       return httpResponseHelper(res, {
-//         data,
-//         statusCode: HttpStatus.OK,
-//         message: 'wallet Created Successfully!',
-//       });
-//     } catch (error) {
-//       return httpResponseHelper(res, error);
-//     }
