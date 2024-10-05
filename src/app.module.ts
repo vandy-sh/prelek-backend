@@ -11,7 +11,7 @@ import { WalletModule } from './wallet/wallet.module';
 import { ActivityModule } from './activity/activity.module';
 import { NestAwsS3Module } from './lib/aws-s3/nest.aws.s3.module';
 import { awsS3Config } from './core/configs/aws-s3.config';
-import { StatistikModule } from './ststistik/user.module';
+import { StatisticModule } from './statistic/statistic.module';
 
 @Module({
   imports: [
@@ -25,7 +25,7 @@ import { StatistikModule } from './ststistik/user.module';
     WalletModule,
     NestAwsS3Module,
     ActivityModule,
-    StatistikModule,
+    StatisticModule,
   ],
   controllers: [AppController],
   providers: [AppService],
