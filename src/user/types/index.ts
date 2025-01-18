@@ -25,4 +25,6 @@ export class CurrentUserDTO {
 
   @ApiPropertyOptional()
   email: String;
+
+  
 }

@@ -1,1 +1,3 @@
-export class TransactionEntity {}
+export class TransactionEntity {
+    
+}

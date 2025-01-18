@@ -8,6 +8,7 @@ import { CurrentUserDTO } from '../../user/types';
 // transactions Transaction[]
 
 export class WalletEntity {
+  
   @ApiProperty()
   id: string;
 

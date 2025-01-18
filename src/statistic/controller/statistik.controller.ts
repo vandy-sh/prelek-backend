@@ -1,6 +1,6 @@
-import { Controller, Get, HttpStatus, Query, Res } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Builder } from 'builder-pattern';
 import { httpResponseHelper } from '../../core/helpers/response.helper';
 import {
@@ -12,10 +12,10 @@ import {
   StatisticGetMonthlyTransactionQuery,
   StatisticGetMonthlyTransactionQueryResult,
 } from '../queries/statistic.get.monthly.transaction.query';
-import {
-  StatisticGetPemasukanQuery,
-  StatisticGetPemasukanQueryResult,
-} from '../queries/statistic.get.pemasukan.queries';
+// import {
+//   StatisticGetPemasukanQuery,
+//   StatisticGetPemasukanQueryResult,
+// } from '../queries/statistic.get.pemasukan.queries';
 import {
   StatisticGetPieChartQuery,
   StatisticGetPieChartQueryResult,
@@ -28,6 +28,8 @@ import {
   StatisticGetGroupByMonthQuery,
   StatisticGetGroupByMonthQueryResult,
 } from '../queries/statistic.get.groupby.month';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
+import { StatisticGetHistoryTransactionQuery, StatisticGetHistoryTransactionQueryResult } from '../queries/statistic.get.hisory.user';
 
 @ApiTags('Statistic')
 @Controller('statistic')
@@ -103,28 +105,28 @@ export class StatisticController {
     }
   }
 
-  @Get('pemasukan')
-  async getPemasukan(@Res() res: Response) {
-    try {
-      const query = Builder<StatisticGetPemasukanQuery>(
-        StatisticGetPemasukanQuery,
-        {},
-      ).build();
+  // @Get('pemasukan')
+  // async getPemasukan(@Res() res: Response) {
+  //   try {
+  //     const query = Builder<StatisticGetPemasukanQuery>(
+  //       StatisticGetPemasukanQuery,
+  //       {},
+  //     ).build();
 
-      const { data } = await this.queryBus.execute<
-        StatisticGetPemasukanQuery,
-        StatisticGetPemasukanQueryResult
-      >(query);
+  //     const { data } = await this.queryBus.execute<
+  //       StatisticGetPemasukanQuery,
+  //       StatisticGetPemasukanQueryResult
+  //     >(query);
 
-      return httpResponseHelper(res, {
-        data,
-        statusCode: HttpStatus.OK,
-        message: 'Total User Fetched Successfully!',
-      });
-    } catch (error) {
-      throw error;
-    }
-  }
+  //     return httpResponseHelper(res, {
+  //       data,
+  //       statusCode: HttpStatus.OK,
+  //       message: 'Total User Fetched Successfully!',
+  //     });
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 
   @Get('total-user')
   async getTotalUsers(@Res() res: Response) {
@@ -166,6 +168,34 @@ export class StatisticController {
         data,
         statusCode: HttpStatus.OK,
         message: 'Monthly Transaction Fetched Successfully!',
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // @ApiBearerAuth(JwtAuthGuard.name)
+  @UseGuards(JwtAuthGuard)
+  @Get('history-transactions')
+  async getHistoryTransactions(@Req() req: any, @Res() res: Response) {
+    try {
+
+      console.log('Decoded User:', req.user);
+      const userId = req.user.id;
+      const query = Builder<StatisticGetHistoryTransactionQuery>(
+        StatisticGetHistoryTransactionQuery,
+        {userId},
+      ).build();
+
+      const { data } = await this.queryBus.execute<
+        StatisticGetHistoryTransactionQuery,
+        StatisticGetHistoryTransactionQueryResult
+      >(query);
+
+      return httpResponseHelper(res, {
+        data,
+        statusCode: HttpStatus.OK,
+        message: 'History Transaction Fetched Successfully!',
       });
     } catch (error) {
       throw error;

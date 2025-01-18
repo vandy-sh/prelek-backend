@@ -3,21 +3,21 @@ import { Prisma } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service"
 import { HistoryDto, PemasukanDto } from "src/statistic/types";
 
-export class ExportLaporanTransaksiQuery {
+export class ExportLaporanPengeluaranTransaksiQuery {
     constructor(public readonly year: string) {}
 }
 
-export class ExportLaporanTransaksiQueryResult {
+export class ExportLaporanPengeluaranTransaksiQueryResult {
     data: PemasukanDto;
     // data:any;
   }
 
-  @QueryHandler(ExportLaporanTransaksiQuery)
-  export class ExportLaporanTransaksiQueryHandler 
-  implements IQueryHandler<ExportLaporanTransaksiQuery, ExportLaporanTransaksiQueryResult>{
+  @QueryHandler(ExportLaporanPengeluaranTransaksiQuery)
+  export class ExportLaporanPengeluaranTransaksiQueryHandler 
+  implements IQueryHandler<ExportLaporanPengeluaranTransaksiQuery, ExportLaporanPengeluaranTransaksiQueryResult>{
     constructor(private readonly prisma: PrismaService) {}
 
-    async execute(query: ExportLaporanTransaksiQuery): Promise<ExportLaporanTransaksiQueryResult> {
+    async execute(query: ExportLaporanPengeluaranTransaksiQuery): Promise<ExportLaporanPengeluaranTransaksiQueryResult> {
         try{
 
             const year = parseInt(query.year);
@@ -30,21 +30,19 @@ export class ExportLaporanTransaksiQueryResult {
                     TO_CHAR(t.created_at, 'MM/DD/YYYY') AS bulan,
                     TO_CHAR(t.created_at, 'DD/MM/YYYY') AS tanggal,
                     a.description AS uraian,
-                    TO_CHAR(SUM(CASE WHEN t.transaction_type = 'SUBSCRIPTION_INCOME' THEN total_amount ELSE 0 END), '99999999999999') AS total_pemasukan,
-                    TO_CHAR(SUM(CASE WHEN t.transaction_type = 'EXPANSES' THEN total_amount ELSE 0 END), '99999999999999') AS total_pengeluaran,
-
-                    t.transaction_type AS jenis_transaksi
+                    TO_CHAR(SUM(total_amount), '99999999999999.99') AS total_pengeluaran,
+                    CASE
+                        WHEN t.transaction_type = 'EXPANSES' THEN 'Pengeluaran kas/prelek'
+                        ELSE t.transaction_type
+                    END AS jenis_transaksi
                 FROM
                     transactions t
                 LEFT JOIN
                     activities a ON t.activity_id = a.id
                 WHERE
-                    t.transaction_type IN ('SUBSCRIPTION_INCOME', 'EXPANSES')
+                    t.transaction_type IN ('EXPANSES')
                     AND (EXTRACT(YEAR FROM t.created_at) = ${year}
-                    
-            
-                )
-                GROUP BY
+                )GROUP BY
                     a.description,  
                     t.transaction_type,
                     TO_CHAR(t.created_at, 'DD/MM/YYYY'),
@@ -65,23 +63,3 @@ export class ExportLaporanTransaksiQueryResult {
         
     }
 }
-
-// SELECT
-//     t.created_at AS tanggal_transaksi,
-//     a.description AS uraian,
-//     t.total_amount AS jumlah,
-//     t.transaction_type AS jenis_transaksi
-// FROM
-//     transactions t
-// LEFT JOIN
-//     activities a ON t.activity_id = a.id
-// WHERE
-//     t.transaction_type IN ('SUBSCRIPTION_INCOME', 'EXPANSES')
-// ORDER BY
-//     t.created_at ASC;
-
-
- // AND (
-    //     -- Filter bulan jika ada
-    //     (EXTRACT(MONTH FROM t.created_at) = :bulan OR :bulan IS NULL)
-    // )

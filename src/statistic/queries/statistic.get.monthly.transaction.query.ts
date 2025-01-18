@@ -26,14 +26,14 @@ export class StatisticGetMonthlyTransactionQueryHandler
     try {
       const data: any = await this.prisma.$queryRaw(Prisma.sql`
       WITH monthly_series AS (SELECT to_char(
-                                           DATE_TRUNC('month', CURRENT_DATE) + (GENERATE_SERIES(0, DATE_PART('days',
-                                                                                                             DATE_TRUNC('month', CURRENT_DATE) +
-                                                                                                             INTERVAL '1 month' -
-                                                                                                             INTERVAL '1 day')::INTEGER -
-                                                                                                   1)) *
-                                                                               INTERVAL '1 day',
-                                           'Mon FMDD'
-                                   ) AS series_data),
+      DATE_TRUNC('month', CURRENT_DATE) + (GENERATE_SERIES(0, DATE_PART('days',
+      DATE_TRUNC('month', CURRENT_DATE) +
+      INTERVAL '1 month' -
+      INTERVAL '1 day')::INTEGER -
+      1)) *
+      INTERVAL '1 day',
+      'Mon FMDD'
+      ) AS series_data),
       base_data AS (SELECT t.transaction_type,
                             SUM(t.total_amount)               as amount,
                             to_char(t.created_at, 'Mon FMDD') as date

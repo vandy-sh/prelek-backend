@@ -138,11 +138,7 @@ export class UserController {
 
   @Get(':id')
   async findById(@Res() res: Response, @Param('id') id: string) {
-    // const responseBuilder =
-    //   Builder<BaseHttpResponseDto<UserEntity, any>>(BaseHttpResponseDto);
-    // responseBuilder.statusCode(200);
-    // responseBuilder.message('User Fetched Successfully');
-
+  
     const query = Builder<UserFindByIdQuery>(UserFindByIdQuery, {
       user_id: id,
     }).build();

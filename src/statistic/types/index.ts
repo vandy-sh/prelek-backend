@@ -14,6 +14,60 @@ export class TotalByMonthDto {
   total_expanses: number;
 }
 
+export class HistoryDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  nama_user: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  transaksi: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  @Type(() => Number)
+  jumlah: number ;
+    
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  tanggal: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  status: string;
+}
+
+
+export class PemasukanDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  tanggal: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  uraian: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  @Type(() => Number)
+  jumlah: number ;
+    
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  jenis_transaksi: string;
+
+}
+
+
 export class TotalResponseDto {
   @ApiProperty()
   @IsNumber()

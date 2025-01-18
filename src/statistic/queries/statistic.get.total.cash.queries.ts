@@ -24,22 +24,22 @@ export class StatisticGetTotalBalanceQueryHandler
   ): Promise<StatisticGetTotalBalanceQueryResult> {
     try {
       const data: any = await this.prisma.$queryRaw(Prisma.sql`
-      SELECT
+       SELECT
     CAST(SUM(CASE
-            WHEN transaction_type IN ('TOP_UP', 'SUBSCRIPTION_INCOME') THEN total_amount
+            WHEN transaction_type IN ('SUBSCRIPTION_INCOME') THEN total_amount
             ELSE 0
         END) AS FLOAT) AS PEMASUKAN,
     CAST(SUM(CASE
-            WHEN transaction_type IN ('EXPANSES', 'SUBSCRIPTION_PAYMENT') THEN total_amount
+            WHEN transaction_type IN ('EXPANSES') THEN total_amount
             ELSE 0
         END) AS FLOAT) AS PENGELUARAN,
     (CAST(SUM(CASE
-            WHEN transaction_type IN ('TOP_UP', 'SUBSCRIPTION_INCOME') THEN total_amount
+            WHEN transaction_type IN ('SUBSCRIPTION_INCOME') THEN total_amount
             ELSE 0
         END) AS FLOAT)
     -
     CAST(SUM(CASE
-            WHEN transaction_type IN ('EXPANSES', 'SUBSCRIPTION_PAYMENT') THEN total_amount
+            WHEN transaction_type IN ('EXPANSES') THEN total_amount
             ELSE 0
         END) AS FLOAT)) AS TOTAL_SALDO
 FROM

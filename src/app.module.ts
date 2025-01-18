@@ -12,6 +12,7 @@ import { ActivityModule } from './activity/activity.module';
 import { NestAwsS3Module } from './lib/aws-s3/nest.aws.s3.module';
 import { awsS3Config } from './core/configs/aws-s3.config';
 import { StatisticModule } from './statistic/statistic.module';
+import { TransactionModule } from './transaction/transaction.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { StatisticModule } from './statistic/statistic.module';
     NestAwsS3Module,
     ActivityModule,
     StatisticModule,
+    TransactionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

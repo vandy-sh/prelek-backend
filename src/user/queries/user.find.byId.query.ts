@@ -29,6 +29,7 @@ export class UserFindByIdQueryHandler
           house_number: true,
           phone_number: true,
           address: true,
+          wallet: true,
         },
       });
       console.log(query.user_id);
