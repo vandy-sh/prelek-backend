@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Param,
   Post,
   Query,
   Res,
@@ -32,6 +33,10 @@ import {
   ActivityFindManyQuery,
   ActivityFindManyQueryResult,
 } from '../query/activity.query';
+import {
+  ActivityFindByIdQuery,
+  ActivityFindByIdQueryResult,
+} from '../query/activity.find.byId.query';
 
 @ApiTags('active')
 @Controller('activities')
@@ -105,5 +110,22 @@ export class ActivityController {
     } catch (error: any) {
       throw error;
     }
+  }
+
+  @Get(':id')
+  async findById(@Res() res: Response, @Param('id') id: string) {
+    const query = Builder<ActivityFindByIdQuery>(ActivityFindByIdQuery, {
+      activity_id: id,
+    }).build();
+
+    const result = await this.queryBus.execute<
+      ActivityFindByIdQuery,
+      ActivityFindByIdQueryResult
+    >(query);
+
+    return httpResponseHelper(res, {
+      message: 'data fetc succesfully',
+      data: result.data,
+    });
   }
 }
