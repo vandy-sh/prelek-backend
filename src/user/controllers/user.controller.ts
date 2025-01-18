@@ -138,7 +138,6 @@ export class UserController {
 
   @Get(':id')
   async findById(@Res() res: Response, @Param('id') id: string) {
-  
     const query = Builder<UserFindByIdQuery>(UserFindByIdQuery, {
       user_id: id,
     }).build();

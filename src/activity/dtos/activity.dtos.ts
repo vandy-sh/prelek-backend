@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
@@ -6,9 +6,11 @@ import {
   IsNotEmpty,
   IsNumber,
   IsNumberString,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
+import { BaseFilterRequest } from 'src/core/dtos/base-filter-request.dto';
 
 //Menggunakan upload file secara langsung dengan form-data "mutler"
 export class ActivityDto {
@@ -58,6 +60,23 @@ export class ActivityDetailDto {
   @IsNotEmpty()
   @Type(() => Number)
   qty: number;
+}
+
+export class ActivityFindManyQueryDto extends BaseFilterRequest {
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  search_params?: string;
+
+  @ApiPropertyOptional()
+  @IsNumber()
+  @IsOptional()
+  title?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  description?: string;
 }
 
 //menggunakan upload file dengan binary data

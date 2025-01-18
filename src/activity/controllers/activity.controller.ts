@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Get,
   HttpStatus,
   Post,
+  Query,
   Res,
   UploadedFiles,
   UseGuards,
@@ -10,12 +12,15 @@ import {
 } from '@nestjs/common';
 import { Builder } from 'builder-pattern';
 
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { httpResponseHelper } from '../../core/helpers/response.helper';
-import { ActivityDto } from '../dtos/activity.dtos';
+import {
+  httpPaginatedResponseHelper,
+  httpResponseHelper,
+} from '../../core/helpers/response.helper';
+import { ActivityDto, ActivityFindManyQueryDto } from '../dtos/activity.dtos';
 import {
   ActivityAddCommand,
   ActivityAddCommandResult,
@@ -23,11 +28,18 @@ import {
 import { JwtAuthGuard } from '../../auth/guards/jwt.auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { HasRoles } from '../../auth/decorator/roles.decorator';
+import {
+  ActivityFindManyQuery,
+  ActivityFindManyQueryResult,
+} from '../query/activity.query';
 
 @ApiTags('active')
 @Controller('activities')
 export class ActivityController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
 
   @ApiBearerAuth(JwtAuthGuard.name)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -66,6 +78,31 @@ export class ActivityController {
         message: 'Create Activity Successfully!',
       });
     } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('')
+  async findMany(@Res() res: Response, @Query() dto: ActivityFindManyQueryDto) {
+    try {
+      const builder = Builder<ActivityFindManyQuery>(ActivityFindManyQuery, {
+        ...dto,
+      });
+
+      const { data, total } = await this.queryBus.execute<
+        ActivityFindManyQuery,
+        ActivityFindManyQueryResult
+      >(builder.build());
+
+      return httpPaginatedResponseHelper(res, {
+        message: 'Activity Fetched Successfully',
+        data,
+        total,
+        currentPage: dto.page,
+        limit: dto.limit,
+      });
+      // return httpResponseHelper(res, responseBuilder.build());
+    } catch (error: any) {
       throw error;
     }
   }
